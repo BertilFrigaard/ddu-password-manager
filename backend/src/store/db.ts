@@ -1,13 +1,13 @@
-import { Pool } from "pg";
+import postgres from "postgres";
 import { PGUSER, PGPASSWORD, PGHOST, PGPORT, PGDATABASE } from "../config";
 
-export const pool: Pool = new Pool({
+export const sql = postgres({
 	user: PGUSER,
 	password: PGPASSWORD,
 	host: PGHOST,
 	port: PGPORT,
 	database: PGDATABASE,
-	connectionTimeoutMillis: 3000,
-	idleTimeoutMillis: 5000,
-	//TODO look into ssl
+	transform: postgres.camel,
+	max: 10, // pool size, default is 10
+	idle_timeout: 20,
 });

@@ -1,4 +1,4 @@
-import { signup } from "./backendService.js";
+import { login, signup } from "./backendService.js";
 
 const loginView = document.getElementById("view-login");
 const loginButton = document.getElementById("login-btn");
@@ -10,5 +10,11 @@ const mainPageButton = document.getElementById("main-page-btn");
 if (signupButton && passwordInput && emailInput) {
 	signupButton.onclick = () => {
 		signup(emailInput.value, passwordInput.value);
+	};
+}
+
+if (loginButton && passwordInput && emailInput) {
+	loginButton.onclick = () => {
+		login(emailInput.value, passwordInput.value);
 	};
 }

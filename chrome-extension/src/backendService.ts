@@ -1,22 +1,19 @@
 import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
-import { bytesToHex, logRequestError, padEmail } from "./util.js";
+import { bytesToHex, hexToBytes, logRequestError, padEmail } from "./util.js";
 import { BACKEND } from "./config.js";
+import { setAccessToken, setRefreshKey, setSymmetricKey } from "./store.js";
 
 export async function signup(email: string, password: string) {
 	const enc = new TextEncoder();
 
 	// 1. Argon2id — derive a master key from the user's password and email (used as salt).
-	// p: 4       — parallelism: use 4 parallel threads
-	// t: 3       — time cost: 3 iterations over memory (increases CPU work)
-	// m: 65536   — memory cost: 64 MiB of RAM (makes brute-force expensive)
-	// dkLen: 32  — output length: 32 bytes (256-bit key)
 	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), {
-		p: 4,
-		t: 3,
-		m: 65536,
-		dkLen: 32,
+		p: 4, // parallelism
+		t: 3, // passes
+		m: 65536, // memory
+		dkLen: 32, // tagLength
 	});
 
 	// 2. HKDF stretch to 64 bytes
@@ -60,5 +57,68 @@ export async function signup(email: string, password: string) {
 		logRequestError("signup", res);
 	} else {
 		console.log("Success");
+	}
+}
+
+export async function login(email: string, password: string) {
+	const enc = new TextEncoder();
+
+	// 1. Argon2id via @noble/hashes (not in Web Crypto API)
+	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), {
+		p: 4, // parallelism
+		t: 3, // passes
+		m: 65536, // memory
+		dkLen: 32, // tagLength
+	});
+
+	// 2. HKDF stretch to 64 bytes
+	const stretchedMasterKey = hkdf(sha512, masterKey, new Uint8Array(0), new TextEncoder().encode("DDU"), 64);
+
+	const encKey = stretchedMasterKey.slice(0, 32);
+	const authKey = stretchedMasterKey.slice(32, 64);
+
+	// 3. Send authKey to server
+	const res = await fetch(`${BACKEND}/login`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			authKey: bytesToHex(authKey),
+			email,
+		}),
+	});
+
+	if (res.ok) {
+		try {
+			const resJson = await res.json();
+
+			// 4. Import encKey into Web Crypto API
+			const cryptoKey = await crypto.subtle.importKey(
+				"raw",
+				encKey,
+				{ name: "AES-GCM" },
+				false, // non-extractable
+				["decrypt"],
+			);
+
+			// 5. Decrypt the protected symmetric key using AES-GCM
+			const iv = hexToBytes(resJson.user.iv).buffer as ArrayBuffer;
+			const authTag = hexToBytes(resJson.user.authTag);
+			const ciphertext = hexToBytes(resJson.user.encryptedKey);
+
+			// Web Crypto expects ciphertext + authTag concatenated
+			const ciphertextWithTag = new Uint8Array([...ciphertext, ...authTag]);
+
+			const symmetricKeyBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, cryptoKey, ciphertextWithTag);
+
+			setSymmetricKey(bytesToHex(new Uint8Array(symmetricKeyBuffer)));
+			setAccessToken(resJson.accessToken);
+			setRefreshKey(resJson.refreshKey);
+
+			console.log("SUCCESS");
+		} catch (err) {
+			throw err;
+		}
+	} else {
+		logRequestError("login", res);
 	}
 }

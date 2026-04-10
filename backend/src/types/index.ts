@@ -7,3 +7,10 @@ export interface User {
 	authKeyHash: string;
 	serverSalt: string;
 }
+
+export interface Session {
+	id: bigint;
+	userId: number;
+	keyHash: string;
+	expiration: bigint;
+}
