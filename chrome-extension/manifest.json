@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Password Manager",
+  "version": "1.0.0",
+  "description": "A simple Hello World Chrome extension",
+  "host_permissions":[
+    "http://localhost:3000/*"
+  ],
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "public/popup.html",
+    "default_title": "Hello World"
+  },
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  }
+
+}

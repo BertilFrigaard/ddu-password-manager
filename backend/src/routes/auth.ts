@@ -8,6 +8,7 @@ router.post("/signup", async (req, res) => {
 	const { authKey, encryptedKey, iv, authTag, email } = req.body;
 
 	// TODO: Missing input validation
+
 	let user;
 	try {
 		user = await getUserByEmail(email);
@@ -15,9 +16,10 @@ router.post("/signup", async (req, res) => {
 		return res.status(500).json({ error: e });
 	}
 
+	console.log(user);
 	if (user) {
 		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
-		console.log(`User with email ${email} already exists`);
+		console.log(`User with email '${email}' already exists`);
 		res.status(400).json({ error: "User already exists" });
 		return;
 	}
