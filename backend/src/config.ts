@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import "dotenv/config";
 
 const PORT = process.env.PORT || 3000;
 const REFRESH_TOKEN_HASH_SECRET = process.env.REFRESH_TOKEN_HASH_SECRET || crypto.randomBytes(32);
@@ -13,6 +14,7 @@ if (!process.env.SESSION_JWT_SECRET) {
 }
 
 if (!process.env.PGUSER || !process.env.PGPASSWORD || !process.env.PGHOST || !process.env.PGPORT || !process.env.PGDATABASE) {
+	console.log(process.env);
 	throw new Error("PostgreSQL enviroment variables not set");
 }
 
