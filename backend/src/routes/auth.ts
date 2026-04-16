@@ -1,10 +1,11 @@
 import { Router } from "express";
 import crypto from "node:crypto";
-import { getUserByEmail, insertUser } from "../store/users";
+import { getUserByEmail, insertUser, setUserDefaultVault } from "../store/users";
 import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET } from "../config";
 import { insertSession } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
+import { insertVault } from "../store/vaults";
 
 const router = Router();
 
@@ -34,7 +35,20 @@ router.post("/signup", async (req, res) => {
 	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: serverSalt, parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
 
 	try {
-		await insertUser(email, authKeyHash.toString("hex"), serverSalt.toString("hex"), encryptedKey, iv, authTag);
+		// Create the user
+		const userId = await insertUser(email, authKeyHash.toString("hex"), serverSalt.toString("hex"), encryptedKey, iv, authTag);
+		try {
+			// Create a default vault to the user
+			const vaultId = await insertVault(userId, "Vault");
+			try {
+				// Set the default vault for the user
+				await setUserDefaultVault(userId, vaultId);
+			} catch (e) {
+				return res.status(500).json({ error: e });
+			}
+		} catch (e) {
+			return res.status(500).json({ error: e });
+		}
 	} catch (e) {
 		return res.status(500).json({ error: e });
 	}

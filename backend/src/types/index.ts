@@ -6,6 +6,7 @@ export interface User {
 	authTag: string;
 	authKeyHash: string;
 	serverSalt: string;
+	defaultVault: number | null;
 }
 
 export interface Session {
@@ -13,4 +14,26 @@ export interface Session {
 	userId: number;
 	keyHash: string;
 	expiration: bigint;
+}
+
+export interface Vault {
+	id: number;
+	userId: number;
+	name: string;
+}
+
+export interface VaultItem {
+	id: bigint;
+	vaultId: number;
+	encryptedInfo: string;
+	iv: string;
+	authTag: string;
+	twoFactorEnabled: boolean;
+}
+
+export interface ItemPassword {
+	vaultItemId: bigint;
+	encryptedPassword: string;
+	iv: string;
+	authTag: string;
 }

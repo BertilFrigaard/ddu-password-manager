@@ -9,7 +9,7 @@ export async function insertUser(email: string, authKeyHash: string, serverSalt:
 			RETURNING id
 		`;
 		if (rows.length) {
-			return rows[0];
+			return rows[0].id;
 		} else {
 			console.error(`Insert user request returned 0 rows for email ${email}`);
 			throw new Error("Something went wrong");
@@ -26,6 +26,15 @@ export async function getUserByEmail(email: string) {
 		return rows.length ? rows[0] : null;
 	} catch (e) {
 		console.error(`Get user request for email ${email} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function setUserDefaultVault(userId: number, vaultId: number | null) {
+	try {
+		await sql`UPDATE users SET default_vault = ${vaultId} WHERE id = ${userId}`;
+	} catch (e) {
+		console.error(`Set user default vault for user with id ${userId} threw error: \n ${e}`);
 		throw new Error("Something went wrong");
 	}
 }
