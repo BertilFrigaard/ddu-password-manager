@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"build": "esbuild src/* --bundle --outdir=dist --format=esm"
+		"build": "esbuild src/**/*.ts --bundle --outdir=dist --format=esm"
 	},
 	"type": "module",
 	"devDependencies": {

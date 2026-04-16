@@ -1,44 +1,38 @@
-let symmetricKey: string | null = null;
-
-export function clearSymmetricKey() {
-	// TODO: Memory should be purged so the key isnt left in memory as garbage
-	symmetricKey = null;
+export async function setSymmetricKey(key: string) {
+	await chrome.storage.session.set({ symmetricKey: key });
 }
 
-export function setSymmetricKey(newSymmetricKey: string) {
-	symmetricKey = newSymmetricKey;
+export async function getSymmetricKey(): Promise<string | null> {
+	const result = await chrome.storage.session.get("symmetricKey");
+	return result.symmetricKey ?? null;
 }
 
-export function getSymmetricKey() {
-	return symmetricKey;
+export async function clearSymmetricKey() {
+	await chrome.storage.session.remove("symmetricKey");
 }
 
-let accessToken: string | null = null;
-
-export function clearAccessToken() {
-	// TODO: Memory should be purged so the key isnt left in memory as garbage
-	accessToken = null;
+export async function setAccessToken(token: string) {
+	await chrome.storage.session.set({ accessToken: token });
 }
 
-export function setAccessToken(newAccessToken: string) {
-	accessToken = newAccessToken;
+export async function getAccessToken(): Promise<string | null> {
+	const result = await chrome.storage.session.get("accessToken");
+	return result.accessToken ?? null;
 }
 
-export function getAccessToken() {
-	return accessToken;
+export async function clearAccessToken() {
+	await chrome.storage.session.remove("accessToken");
 }
 
-let refreshKey: string | null = null;
-
-export function clearRefreshKey() {
-	// TODO: Memory should be purged so the key isnt left in memory as garbage
-	refreshKey = null;
+export async function setRefreshKey(key: string) {
+	await chrome.storage.session.set({ refreshKey: key });
 }
 
-export function setRefreshKey(newRefreshKey: string) {
-	refreshKey = newRefreshKey;
+export async function getRefreshKey(): Promise<string | null> {
+	const result = await chrome.storage.session.get("refreshKey");
+	return result.refreshKey ?? null;
 }
 
-export function getRefreshKey() {
-	return refreshKey;
+export async function clearRefreshKey() {
+	await chrome.storage.session.remove("refreshKey");
 }
