@@ -16,13 +16,13 @@ export interface Session {
 	expiration: bigint;
 }
 
-export interface Vault {
+export interface DBVault {
 	id: number;
 	userId: number;
 	name: string;
 }
 
-export interface VaultItem {
+export interface DBVaultItem {
 	id: bigint;
 	vaultId: number;
 	encryptedInfo: string;
@@ -31,8 +31,29 @@ export interface VaultItem {
 	twoFactorEnabled: boolean;
 }
 
-export interface ItemPassword {
+export interface DBItemPassword {
 	vaultItemId: bigint;
+	encryptedPassword: string;
+	iv: string;
+	authTag: string;
+}
+
+export interface Vault {
+	id: number;
+	name: string;
+	items: VaultItem[];
+}
+
+export interface VaultItem {
+	id: bigint;
+	encryptedInfo: string;
+	iv: string;
+	authTag: string;
+	twoFactorEnabled: boolean;
+	password: ItemPassword | null;
+}
+
+export interface ItemPassword {
 	encryptedPassword: string;
 	iv: string;
 	authTag: string;

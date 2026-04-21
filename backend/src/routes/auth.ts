@@ -5,7 +5,7 @@ import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET } from "../config";
 import { insertSession } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
-import { insertVault } from "../store/vaults";
+import { getUserVaults, insertVault } from "../store/vaults";
 
 const router = Router();
 
@@ -73,8 +73,6 @@ router.post("/login", async (req, res) => {
 		return;
 	}
 
-	console.log(user);
-
 	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(user.authKeyHash, "hex"))) {
@@ -85,13 +83,14 @@ router.post("/login", async (req, res) => {
 
 	const refreshKey = crypto.randomBytes(32);
 	const hash = crypto.createHmac("sha256", REFRESH_TOKEN_HASH_SECRET).update(refreshKey);
+	const sessionKeyHash = hash.digest("hex");
 
 	const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 	const sessionExpiration = BigInt(Date.now() + ONE_WEEK_MS);
 
 	let sessionId;
 	try {
-		sessionId = await insertSession(user.id, hash.digest("hex"), sessionExpiration);
+		sessionId = await insertSession(user.id, sessionKeyHash, sessionExpiration);
 	} catch (e) {
 		return res.status(500).json({ error: e });
 	}
@@ -99,7 +98,7 @@ router.post("/login", async (req, res) => {
 	const session: Session = {
 		id: sessionId,
 		userId: user.id,
-		keyHash: hash.digest("hex"),
+		keyHash: sessionKeyHash,
 		expiration: sessionExpiration,
 	};
 
@@ -112,8 +111,11 @@ router.post("/login", async (req, res) => {
 		{ expiresIn: "15m" },
 	);
 
-	// TODO: Vault missing
-	res.json({ user, accessToken, refreshKey: refreshKey.toString("hex") });
+	const vaults = await getUserVaults(user.id);
+
+	const { authKeyHash: _, serverSalt: __, ...userWithoutSensitiveData } = user;
+	console.log({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
+	res.json({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 });
 
 export default router;
