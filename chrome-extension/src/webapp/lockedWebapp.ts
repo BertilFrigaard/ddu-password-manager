@@ -1,5 +1,4 @@
 import { login, signup } from "../backendService.js";
-import { getRefreshKey } from "../store.js";
 
 async function main() {
 	const loginView = document.getElementById("view-login");
@@ -7,7 +6,6 @@ async function main() {
 	const signupButton = document.getElementById("signup-btn");
 	const emailInput = document.getElementById("email-input") as HTMLInputElement | null;
 	const passwordInput = document.getElementById("password-input") as HTMLInputElement | null;
-	const mainPageButton = document.getElementById("main-page-btn");
 
 	if (signupButton && passwordInput && emailInput) {
 		signupButton.onclick = async () => {
@@ -18,13 +16,7 @@ async function main() {
 	if (loginButton && passwordInput && emailInput) {
 		loginButton.onclick = async () => {
 			await login(emailInput.value, passwordInput.value);
-			window.location.replace("popupLoading.html");
-		};
-	}
-
-	if (mainPageButton) {
-		mainPageButton.onclick = async () => {
-			chrome.tabs.create({ url: "public/webapp/webappLoading.html" });
+			window.location.replace("webappLoading.html");
 		};
 	}
 }
