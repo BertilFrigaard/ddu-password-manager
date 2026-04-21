@@ -1,3 +1,5 @@
+import { StoredUser, Vault } from "./types.js";
+
 export async function setSymmetricKey(key: string) {
 	await chrome.storage.session.set({ symmetricKey: key });
 }
@@ -35,4 +37,30 @@ export async function getRefreshKey(): Promise<string | null> {
 
 export async function clearRefreshKey() {
 	await chrome.storage.session.remove("refreshKey");
+}
+
+export async function setUser(user: StoredUser) {
+	await chrome.storage.session.set({ user });
+}
+
+export async function getUser(): Promise<StoredUser | null> {
+	const result = await chrome.storage.session.get("user");
+	return result.user ?? null;
+}
+
+export async function clearUser() {
+	await chrome.storage.session.remove("user");
+}
+
+export async function setVaults(vaults: Vault[]) {
+	await chrome.storage.session.set({ vaults });
+}
+
+export async function getVaults(): Promise<Vault[] | null> {
+	const result = await chrome.storage.session.get("vaults");
+	return result.vaults ?? null;
+}
+
+export async function clearVaults() {
+	await chrome.storage.session.remove("vaults");
 }

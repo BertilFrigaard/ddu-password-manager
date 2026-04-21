@@ -30,6 +30,16 @@ export async function getUserByEmail(email: string) {
 	}
 }
 
+export async function getUserById(id: number): Promise<User | null> {
+	try {
+		const rows = await sql<User[]>`SELECT * FROM users WHERE id = ${id}`;
+		return rows.length ? rows[0] : null;
+	} catch (e) {
+		console.error(`Get user request for id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
 export async function setUserDefaultVault(userId: number, vaultId: number | null) {
 	try {
 		await sql`UPDATE users SET default_vault = ${vaultId} WHERE id = ${userId}`;

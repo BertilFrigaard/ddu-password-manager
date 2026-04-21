@@ -1,3 +1,13 @@
+declare global {
+	namespace Express {
+		interface Locals {
+			session?: { sessionId: bigint; userId: number };
+			user?: User;
+			vault?: DBVault;
+		}
+	}
+}
+
 export interface User {
 	id: number;
 	email: string;

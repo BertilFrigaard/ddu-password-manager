@@ -1,4 +1,4 @@
-import { DBVault, DBVaultItem, DBItemPassword, Vault } from "../types";
+import { DBVault, DBVaultItem, DBItemPassword, Vault, ItemPassword } from "../types";
 import { sql } from "./db";
 
 export async function insertVault(userId: number, name: string) {
@@ -16,6 +16,16 @@ export async function insertVault(userId: number, name: string) {
 		}
 	} catch (e) {
 		console.error(`Insert vault request for user with id ${userId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function getDBVaultById(id: number): Promise<DBVault | null> {
+	try {
+		const rows = await sql<DBVault[]>`SELECT * FROM vaults WHERE id = ${id}`;
+		return rows.length ? rows[0] : null;
+	} catch (e) {
+		console.error(`Get vault request for vault id ${id} threw error: \n ${e}`);
 		throw new Error("Something went wrong");
 	}
 }
@@ -72,4 +82,37 @@ export async function getUserVaults(userId: number) {
 	}));
 
 	return formattedVaults;
+}
+
+export async function insertVaultItem(vaultId: number, encryptedInfo: string, iv: string, authTag: string, twoFactorEnabled: boolean, password: ItemPassword | null) {
+	try {
+		let rows: { id: bigint }[];
+		if (password) {
+			rows = await sql<{ id: bigint }[]>`
+				WITH new_item AS (
+					INSERT INTO vault_items (vault_id, encrypted_info, iv, auth_tag, two_factor_enabled)
+					VALUES (${vaultId}, ${encryptedInfo}, ${iv}, ${authTag}, ${twoFactorEnabled})
+					RETURNING id
+				)
+				INSERT INTO item_passwords (vault_item_id, encrypted_password, iv, auth_tag)
+				SELECT id, ${password.encryptedPassword}, ${password.iv}, ${password.authTag} FROM new_item
+				RETURNING vault_item_id AS id
+			`;
+		} else {
+			rows = await sql<{ id: bigint }[]>`
+				INSERT INTO vault_items (vault_id, encrypted_info, iv, auth_tag, two_factor_enabled)
+				VALUES (${vaultId}, ${encryptedInfo}, ${iv}, ${authTag}, ${twoFactorEnabled})
+				RETURNING id
+			`;
+		}
+		if (rows.length) {
+			return rows[0].id;
+		} else {
+			console.error(`Insert vault item request returned 0 rows for vault with id ${vaultId}`);
+			throw new Error("Something went wrong");
+		}
+	} catch (e) {
+		console.error(`Insert vault item request for vault with id ${vaultId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
 }

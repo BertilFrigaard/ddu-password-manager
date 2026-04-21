@@ -2,8 +2,11 @@ import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, logRequestError, padEmail } from "./util.js";
+import { decryptData, encryptData } from "./crypto.js";
+import { VaultItem } from "./types.js";
 import { BACKEND } from "./config.js";
-import { setAccessToken, setRefreshKey, setSymmetricKey } from "./store.js";
+import { getSymmetricKey, getUser, getVaults, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setVaults } from "./store.js";
+import { authenticatedFetch } from "./authentication.js";
 
 export async function signup(email: string, password: string) {
 	const enc = new TextEncoder();
@@ -113,6 +116,29 @@ export async function login(email: string, password: string) {
 			setSymmetricKey(bytesToHex(new Uint8Array(symmetricKeyBuffer)));
 			setAccessToken(resJson.accessToken);
 			setRefreshKey(resJson.refreshKey);
+			setUser({ id: resJson.user.id, email: resJson.user.email, defaultVault: resJson.user.defaultVault });
+
+			const decryptedVaults = await Promise.all(
+				resJson.vaults.map(async (vault: { id: number; name: string; items: any[] }) => ({
+					id: vault.id,
+					name: vault.name,
+					items: await Promise.all(
+						vault.items.map(async (item): Promise<VaultItem> => {
+							const infoBytes = await decryptData(item.encryptedInfo, item.iv, item.authTag);
+							const info = JSON.parse(new TextDecoder().decode(infoBytes));
+							return {
+								id: item.id,
+								website: info.website,
+								username: info.username,
+								twoFactorEnabled: item.twoFactorEnabled,
+								password: item.password ?? null,
+							};
+						}),
+					),
+				})),
+			);
+
+			setVaults(decryptedVaults);
 
 			console.log("SUCCESS");
 		} catch (err) {
@@ -120,5 +146,40 @@ export async function login(email: string, password: string) {
 		}
 	} else {
 		logRequestError("login", res);
+	}
+}
+
+export async function createCredential(website: string, username: string, passsword: string | null, vaultId: number) {
+	const enc = new TextEncoder();
+
+	const encryptedInfo = await encryptData(enc.encode(JSON.stringify({ website, username })));
+	let body;
+	// TODO: Twofactor should not always be false i am thinking
+	if (passsword) {
+		const encryptedPassword = await encryptData(enc.encode(passsword));
+		body = {
+			encryptedInfo: encryptedInfo.encryptedData,
+			iv: encryptedInfo.iv,
+			authTag: encryptedInfo.authTag,
+			twoFactorEnabled: false,
+			ivPassword: encryptedPassword.iv,
+			encryptedPassword: encryptedPassword.encryptedData,
+			authTagPassword: encryptedPassword.authTag,
+		};
+	} else {
+		body = {
+			encryptedInfo: encryptedInfo.encryptedData,
+			iv: encryptedInfo.iv,
+			authTag: encryptedInfo.authTag,
+			twoFactorEnabled: false,
+		};
+	}
+
+	const res = await authenticatedFetch(`/vaults/${vaultId}/items`, "POST", body);
+
+	if (!res.ok) {
+		logRequestError("HERE", res);
+	} else {
+		console.log("SUCCESS");
 	}
 }

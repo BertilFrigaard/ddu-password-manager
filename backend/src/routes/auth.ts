@@ -2,7 +2,7 @@ import { Router } from "express";
 import crypto from "node:crypto";
 import { getUserByEmail, insertUser, setUserDefaultVault } from "../store/users";
 import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET } from "../config";
-import { insertSession } from "../store/sessions";
+import { insertSession, getSessionById } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
 import { getUserVaults, insertVault } from "../store/vaults";
@@ -113,9 +113,58 @@ router.post("/login", async (req, res) => {
 
 	const vaults = await getUserVaults(user.id);
 
+	// TODO: Maybe the email should also be filtered away as it might be seen as sensitive
 	const { authKeyHash: _, serverSalt: __, ...userWithoutSensitiveData } = user;
 	console.log({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 	res.json({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
+});
+
+router.post("/refresh", async (req, res) => {
+	const { refreshKey, sessionId: sessionIdRaw } = req.body;
+
+	if (typeof refreshKey !== "string" || !refreshKey || sessionIdRaw === undefined) {
+		res.status(400).json({ error: "Missing refreshKey or sessionId" });
+		return;
+	}
+
+	let sessionId: bigint;
+	try {
+		sessionId = BigInt(sessionIdRaw);
+	} catch {
+		res.status(400).json({ error: "Invalid sessionId" });
+		return;
+	}
+
+	let session;
+	try {
+		session = await getSessionById(sessionId);
+	} catch {
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	if (!session) {
+		res.status(401).json({ error: "Invalid session" });
+		return;
+	}
+
+	// TODO: Maybe delete the session if it is expired
+	if (session.expiration <= BigInt(Date.now())) {
+		res.status(401).json({ error: "Session expired" });
+		return;
+	}
+
+	const incomingHash = crypto.createHmac("sha256", REFRESH_TOKEN_HASH_SECRET).update(Buffer.from(refreshKey, "hex")).digest();
+	const storedHash = Buffer.from(session.keyHash, "hex");
+
+	if (incomingHash.length !== storedHash.length || !crypto.timingSafeEqual(incomingHash, storedHash)) {
+		res.status(401).json({ error: "Invalid session" });
+		return;
+	}
+
+	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15m" });
+
+	res.json({ accessToken });
 });
 
 export default router;
