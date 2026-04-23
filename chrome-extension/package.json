@@ -3,16 +3,20 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"build": "esbuild src/**/*.ts --bundle --outdir=dist --format=esm"
+		"build": "esbuild src/**/*.ts src/**/*.tsx --bundle --outdir=dist --format=esm"
 	},
 	"type": "module",
 	"devDependencies": {
 		"@types/chrome": "^0.0.260",
 		"@types/node": "^25.5.0",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
 		"esbuild": "^0.27.4",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@noble/hashes": "^2.0.1"
+		"@noble/hashes": "^2.0.1",
+		"react": "^19.2.5",
+		"react-dom": "^19.2.5"
 	}
 }

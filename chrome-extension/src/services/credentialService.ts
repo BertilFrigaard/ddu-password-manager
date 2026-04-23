@@ -1,5 +1,5 @@
 import { encryptData } from "./crypto.js";
-import { logRequestError } from "../core/util.js";
+import { logRequestError } from "../common/util.js";
 import { authenticatedFetch } from "./authService.js";
 
 export async function createCredential(website: string, username: string, passsword: string | null, vaultId: number) {

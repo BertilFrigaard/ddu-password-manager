@@ -1,24 +1,11 @@
 import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
-import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../core/util.js";
+import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../common/util.js";
 import { decryptData } from "./crypto.js";
-import { VaultItem } from "../core/types.js";
-import { BACKEND } from "../core/config.js";
-import {
-	clearAccessToken,
-	clearRefreshKey,
-	clearSymmetricKey,
-	clearUser,
-	clearVaults,
-	getAccessToken,
-	getRefreshKey,
-	setAccessToken,
-	setRefreshKey,
-	setSymmetricKey,
-	setUser,
-	setVaults,
-} from "../storage/store.js";
+import { VaultItem } from "../common/types.js";
+import { BACKEND } from "../common/config.js";
+import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setVaults } from "../store/store.js";
 
 export async function signup(email: string, password: string) {
 	const enc = new TextEncoder();

@@ -11,12 +11,14 @@
 		"start": "node build/index.js"
 	},
 	"dependencies": {
+		"cors": "^2.8.6",
 		"dotenv": "^17.4.1",
 		"express": "^5.2.1",
 		"jsonwebtoken": "^9.0.3",
 		"postgres": "^3.4.9"
 	},
 	"devDependencies": {
+		"@types/cors": "^2.8.19",
 		"@types/dotenv": "^6.1.1",
 		"@types/express": "^5.0.6",
 		"@types/jsonwebtoken": "^9.0.10",

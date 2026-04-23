@@ -1,16 +1,21 @@
 {
 	"manifest_version": 3,
-	"name": "Password Manager",
+	"name": "Password Manager REACT test",
 	"version": "1.0.0",
 	"description": "A simple Hello World Chrome extension",
-	"host_permissions": ["http://localhost:3000/*"],
-	"permissions": ["storage"],
+	"permissions": ["tabs", "storage"],
 	"action": {
-		"default_popup": "public/popup/popupLoading.html",
+		"default_popup": "public/popup.html",
 		"default_title": "Hello World"
 	},
 	"background": {
-		"service_worker": "dist/background.js",
+		"service_worker": "dist/app/background.js",
 		"type": "module"
-	}
+	},
+	"web_accessible_resources": [
+		{
+			"resources": ["public/mainpage.html"],
+			"matches": ["<all_urls>"]
+		}
+	]
 }
