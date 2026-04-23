@@ -26,3 +26,20 @@ export async function logRequestError(method: string, res: Response) {
 
 	console.error(errorString);
 }
+
+export function setTextElement(element: HTMLElement | null, str: string) {
+	if (!element) {
+		console.error("Element not found");
+		return;
+	}
+	element.textContent = str;
+}
+
+export function setTextId(id: string, str: string) {
+	const element = document.getElementById(id);
+	if (!element) {
+		console.error(`Element not found with id: ${id}`);
+		return;
+	}
+	element.textContent = str;
+}

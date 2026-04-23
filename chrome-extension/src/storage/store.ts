@@ -61,6 +61,14 @@ export async function getVaults(): Promise<Vault[] | null> {
 	return result.vaults ?? null;
 }
 
+export async function getCredentials() {
+	const vaults = await getVaults();
+	if (!vaults) {
+		return [];
+	}
+	return vaults.flatMap((vault) => vault.items);
+}
+
 export async function clearVaults() {
 	await chrome.storage.session.remove("vaults");
 }
