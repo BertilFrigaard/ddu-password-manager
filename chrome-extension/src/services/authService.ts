@@ -1,12 +1,24 @@
 import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
-import { bytesToHex, hexToBytes, logRequestError, padEmail } from "./util.js";
-import { decryptData, encryptData } from "./crypto.js";
-import { VaultItem } from "./types.js";
-import { BACKEND } from "./config.js";
-import { getSymmetricKey, getUser, getVaults, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setVaults } from "./store.js";
-import { authenticatedFetch } from "./authentication.js";
+import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../core/util.js";
+import { decryptData } from "./crypto.js";
+import { VaultItem } from "../core/types.js";
+import { BACKEND } from "../core/config.js";
+import {
+	clearAccessToken,
+	clearRefreshKey,
+	clearSymmetricKey,
+	clearUser,
+	clearVaults,
+	getAccessToken,
+	getRefreshKey,
+	setAccessToken,
+	setRefreshKey,
+	setSymmetricKey,
+	setUser,
+	setVaults,
+} from "../storage/store.js";
 
 export async function signup(email: string, password: string) {
 	const enc = new TextEncoder();
@@ -149,37 +161,77 @@ export async function login(email: string, password: string) {
 	}
 }
 
-export async function createCredential(website: string, username: string, passsword: string | null, vaultId: number) {
-	const enc = new TextEncoder();
+export async function isUnlocked(): Promise<boolean> {
+	const key = await getRefreshKey();
+	return key !== null;
+}
 
-	const encryptedInfo = await encryptData(enc.encode(JSON.stringify({ website, username })));
-	let body;
-	// TODO: Twofactor should not always be false i am thinking
-	if (passsword) {
-		const encryptedPassword = await encryptData(enc.encode(passsword));
-		body = {
-			encryptedInfo: encryptedInfo.encryptedData,
-			iv: encryptedInfo.iv,
-			authTag: encryptedInfo.authTag,
-			twoFactorEnabled: false,
-			ivPassword: encryptedPassword.iv,
-			encryptedPassword: encryptedPassword.encryptedData,
-			authTagPassword: encryptedPassword.authTag,
-		};
-	} else {
-		body = {
-			encryptedInfo: encryptedInfo.encryptedData,
-			iv: encryptedInfo.iv,
-			authTag: encryptedInfo.authTag,
-			twoFactorEnabled: false,
-		};
+export async function logout() {
+	await clearAccessToken();
+	await clearSymmetricKey();
+	await clearRefreshKey();
+	await clearUser();
+	await clearVaults();
+}
+
+async function refreshAccessToken(): Promise<void> {
+	const refreshKey = await getRefreshKey();
+	if (!refreshKey) {
+		throw new Error("No refresh key");
 	}
 
-	const res = await authenticatedFetch(`/vaults/${vaultId}/items`, "POST", body);
+	const accessToken = await getAccessToken();
+	if (!accessToken) {
+		throw new Error("No access token to extract sessionId");
+	}
+
+	// TODO: figure out how the sessinId is extracted from the payload,
+	// make it cleaner and possiple extract to a util function
+	const payload = JSON.parse(atob(accessToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+	const sessionId = payload.sessionId;
+
+	const res = await fetch(`${BACKEND}/refresh`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ refreshKey, sessionId }),
+	});
 
 	if (!res.ok) {
-		logRequestError("HERE", res);
-	} else {
-		console.log("SUCCESS");
+		await logRequestError("refreshAccessToken", res);
+		throw new Error("Refresh access token failed");
 	}
+
+	const { accessToken: newToken } = await res.json();
+	await setAccessToken(newToken);
+}
+
+export async function authenticatedFetch(endpoint: string, method: string, body?: object): Promise<Response> {
+	const makeRequest = async (token: string | null) =>
+		fetch(`${BACKEND}${endpoint}`, {
+			method,
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token ?? ""}`,
+			},
+			body: body !== undefined ? JSON.stringify(body) : undefined,
+		});
+
+	let res = await makeRequest(await getAccessToken());
+	if (res.status !== 401) {
+		return res;
+	}
+	try {
+		await refreshAccessToken();
+	} catch {
+		await logout();
+		throw new Error("Session expired, logged out");
+	}
+
+	res = await makeRequest(await getAccessToken());
+	if (res.status === 401) {
+		await logout();
+		throw new Error("Session expired, logged out");
+	}
+
+	return res;
 }

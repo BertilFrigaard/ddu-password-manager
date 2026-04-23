@@ -1,4 +1,4 @@
-import { isUnlocked } from "../authentication.js";
+import { isUnlocked } from "../services/authService.js";
 
 async function main() {
 	if (await isUnlocked()) {

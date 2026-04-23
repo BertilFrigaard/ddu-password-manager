@@ -1,5 +1,5 @@
-import { createCredential } from "../backendService.js";
-import { getUser, getVaults } from "../store.js";
+import { createCredential } from "../services/credentialService.js";
+import { getUser, getVaults } from "../storage/store.js";
 
 async function main() {
 	const websiteInput = document.getElementById("website-input") as HTMLInputElement | null;

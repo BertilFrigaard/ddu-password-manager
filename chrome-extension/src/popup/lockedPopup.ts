@@ -1,5 +1,5 @@
-import { login, signup } from "../backendService.js";
-import { getRefreshKey } from "../store.js";
+import { login, signup } from "../services/authService.js";
+import { getRefreshKey } from "../storage/store.js";
 
 async function main() {
 	const loginView = document.getElementById("view-login");

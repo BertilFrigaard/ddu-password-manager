@@ -1,5 +1,5 @@
-import { getSymmetricKey } from "./store.js";
-import { bytesToHex, hexToBytes } from "./util.js";
+import { getSymmetricKey } from "../storage/store.js";
+import { bytesToHex, hexToBytes } from "../core/util.js";
 
 export async function decryptData(encryptedData: string, iv: string, authTag: string): Promise<Uint8Array> {
 	const symmetricKeyHex = await getSymmetricKey();

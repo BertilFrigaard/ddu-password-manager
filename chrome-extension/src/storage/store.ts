@@ -1,4 +1,4 @@
-import { StoredUser, Vault } from "./types.js";
+import { StoredUser, Vault } from "../core/types.js";
 
 export async function setSymmetricKey(key: string) {
 	await chrome.storage.session.set({ symmetricKey: key });

@@ -1,4 +1,4 @@
-import { login, signup } from "../backendService.js";
+import { login, signup } from "../services/authService.js";
 
 async function main() {
 	const loginView = document.getElementById("view-login");
