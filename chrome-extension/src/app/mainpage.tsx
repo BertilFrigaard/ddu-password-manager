@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { isUnlocked } from "../services/authService.js";
 import { Signup } from "../components/webapp/signup.js";
 import { Login } from "../components/webapp/login.js";
+import { Unlocked } from "../components/webapp/unlocked.js";
 
 function MainPage() {
 	const [view, setView] = useState<null | "signup">(null);
@@ -28,11 +29,7 @@ function MainPage() {
 	}
 
 	if (unlocked) {
-		return (
-			<div>
-				<h1>Hello user</h1>
-			</div>
-		);
+		return <Unlocked onRefresh={refresh} />;
 	} else {
 		if (view == "signup") {
 			return <Signup onRefresh={refresh} />;

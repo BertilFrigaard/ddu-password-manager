@@ -61,12 +61,16 @@ export async function getVaults(): Promise<Vault[] | null> {
 	return result.vaults ?? null;
 }
 
-export async function getCredentials() {
+export async function getCredentials(selectVault: number | null = null) {
 	const vaults = await getVaults();
 	if (!vaults) {
 		return [];
 	}
-	return vaults.flatMap((vault) => vault.items);
+	if (selectVault !== null) {
+		return vaults.filter((v) => v.id == selectVault).flatMap((vault) => vault.items);
+	} else {
+		return vaults.flatMap((vault) => vault.items);
+	}
 }
 
 export async function clearVaults() {
