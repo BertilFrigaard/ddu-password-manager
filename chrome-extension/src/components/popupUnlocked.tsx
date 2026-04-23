@@ -90,7 +90,19 @@ export function PopupUnlocked({ onRefresh }: Props) {
 
 	return (
 		<div className="flex flex-col items-center justify-center w-72 min-h-48 px-6 py-8 bg-white">
-			<h1 className="text-2xl font-bold text-gray-800 mb-6">Vault</h1>
+			<div className="flex items-center justify-between w-full mb-6">
+				<h1 className="text-2xl font-bold text-gray-800">Vault</h1>
+				<button
+					className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+					onClick={async () => {
+						await logout();
+						onRefresh();
+					}}
+				>
+					<FiLogOut size={14} />
+					Logout
+				</button>
+			</div>
 			<div className="relative w-full mb-4">
 				<FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
 				<input
@@ -141,28 +153,16 @@ export function PopupUnlocked({ onRefresh }: Props) {
 					<FiExternalLink size={12} />
 					Open web app
 				</button>
-				<div className="gap-3 flex">
-					<button
-						className="flex items-center gap-1 hover:cursor-pointer"
-						onClick={async () => {
-							await logout();
-							onRefresh();
-						}}
-					>
-						<FiLogOut size={14} />
-						Logout
-					</button>
-					<button
-						className="flex items-center gap-1 hover:cursor-pointer"
-						onClick={() => {
-							// TODO: Get updates from server
-							updateCredentials();
-						}}
-					>
-						<FiRefreshCw size={14} />
-						Refresh
-					</button>
-				</div>
+				<button
+					className="flex items-center gap-1 hover:cursor-pointer"
+					onClick={() => {
+						// TODO: Get updates from server
+						updateCredentials();
+					}}
+				>
+					<FiRefreshCw size={14} />
+					Refresh
+				</button>
 			</div>
 		</div>
 	);

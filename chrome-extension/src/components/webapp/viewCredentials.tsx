@@ -73,7 +73,7 @@ export function ViewCredentials({ selectVault }: Props) {
 	};
 	return (
 		<div className="px-10 py-5">
-			<h2 className="text-2xl font-semibold mb-3">Credentials</h2>
+			<h2 className="text-3xl font-semibold mb-5">Your Logins</h2>
 			<div className="relative w-full mb-4">
 				<FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
 				<input
@@ -91,15 +91,14 @@ export function ViewCredentials({ selectVault }: Props) {
 					credentials
 						.filter((v) => v.username?.toLowerCase().includes(searchText.toLowerCase()) || v.website?.toLowerCase().includes(searchText.toLowerCase()))
 						.map((item) => (
-							<div key={item.id} className="flex w-full justify-between border border-gray-300 rounded-md px-3 py-1">
-								<div>
-									<p className="text-sm text-gray-800 font-semibold">{item.website}</p>
-									<p className="text-sm text-gray-600">{item.username}</p>
+							<div key={item.id} className="flex w-full justify-between border border-gray-300 rounded-md px-5 py-1">
+								<div className="flex flex-col gap-1 py-2">
+									<p className="text-lg text-gray-800 font-bold">{item.website}</p>
+									<p className="text-base text-gray-600">{item.username}</p>
 								</div>
-								{showingPassword == item.id && decryptedPassword && <p>{decryptedPassword}</p>}
-								<div className="flex gap-3">
+								<div className="flex gap-3 items-center">
 									<button
-										className="flex items-center gap-1 hover:cursor-pointer"
+										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
 										onClick={() => {
 											if (item.twoFactorEnabled) {
 												console.error("NOT IMPLEMENTED 2FA yet");
@@ -112,16 +111,23 @@ export function ViewCredentials({ selectVault }: Props) {
 									>
 										{showingPassword == item.id ? (
 											<>
-												<FaRegEyeSlash size={14} /> Hide Password
+												<FaRegEyeSlash size={14} />
+												Password
 											</>
 										) : (
 											<>
-												<FaRegEye size={14} /> Show Password
+												<FaRegEye size={14} />
+												Password
 											</>
 										)}
 									</button>
+									{showingPassword == item.id && decryptedPassword && (
+										<div className="flex items-center justify-center bg-white rounded h-10 px-3">
+											<p>{decryptedPassword}</p>
+										</div>
+									)}
 									<button
-										className="flex items-center gap-1 hover:cursor-pointer"
+										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
 										onClick={() => {
 											setSelected(item);
 										}}
@@ -130,7 +136,7 @@ export function ViewCredentials({ selectVault }: Props) {
 										Copy
 									</button>
 									<button
-										className="flex items-center gap-1 hover:cursor-pointer"
+										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
 										onClick={() => {
 											onEditCredential(item.id);
 										}}
