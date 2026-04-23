@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { login } from "../services/authService.js";
+import { BsBoxArrowUpRight } from "react-icons/bs";
 
 interface Props {
 	onRefresh: () => void;
@@ -49,8 +50,9 @@ export function PopupLocked({ onRefresh }: Props) {
 				<button onClick={onLogin} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
 					Login
 				</button>
-				<button onClick={onSignup} className="w-full py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+				<button onClick={onSignup} className="relative flex items-center justify-center w-full py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
 					Signup
+					<BsBoxArrowUpRight size={14} className="absolute right-3" />
 				</button>
 			</div>
 			<button onClick={onWebapp} className="mt-5 text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
