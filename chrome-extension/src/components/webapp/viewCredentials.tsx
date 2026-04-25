@@ -8,6 +8,7 @@ import { FaPlus } from "react-icons/fa6";
 import Modal from "../modals/modal.js";
 import { CreateNewLogin } from "../modals/createNewLogin.js";
 import { SearchInput } from "../input/searchInput.js";
+import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
 
 interface Props {
 	selectVault: Vault | null;
@@ -21,16 +22,6 @@ export function ViewCredentials({ selectVault }: Props) {
 	const [whileNewLogin, setWhileNewLogin] = useState<boolean>(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
-
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-				setSelected(null);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
 
 	const updateCredentials = async () => {
 		setCredentials(null);
@@ -64,30 +55,6 @@ export function ViewCredentials({ selectVault }: Props) {
 
 	const onEditCredential = async (id: number) => {};
 
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text);
-	};
-
-	const copyWebsite = () => {
-		if (selected) copyToClipboard(selected.website);
-	};
-
-	const copyUsername = () => {
-		if (selected) copyToClipboard(selected.username);
-	};
-
-	const copyPassword = async () => {
-		if (selected) {
-			if (selected.twoFactorEnabled) {
-				console.error("NOT IMPLEMENTED 2FA REQUIRED");
-			} else if (!selected.password) {
-				console.error("No password found for not 2FA protected item");
-			} else {
-				const password = await decryptData(selected.password.encryptedPassword, selected.password.iv, selected.password.authTag);
-				copyToClipboard(new TextDecoder().decode(password));
-			}
-		}
-	};
 	return (
 		<div className="px-10 py-5">
 			<div className="justify-between flex">
@@ -150,35 +117,14 @@ export function ViewCredentials({ selectVault }: Props) {
 											Copy
 										</button>
 										{selected?.id === item.id && (
-											<div className="absolute right-0 top-11 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyWebsite();
-														setSelected(null);
-													}}
-												>
-													Website
-												</button>
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyUsername();
-														setSelected(null);
-													}}
-												>
-													Username
-												</button>
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyPassword();
-														setSelected(null);
-													}}
-												>
-													Password
-												</button>
-											</div>
+											<LoginCopyDropdown
+												dropdownRef={dropdownRef}
+												item={item}
+												onClose={() => {
+													setSelected(null);
+												}}
+												className="top-12"
+											/>
 										)}
 									</div>
 									<button

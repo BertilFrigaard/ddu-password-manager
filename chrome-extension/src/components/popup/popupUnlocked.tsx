@@ -5,6 +5,7 @@ import { logout } from "../../services/authService.js";
 import { getCredentials } from "../../store/store.js";
 import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
+import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
 
 interface Props {
 	onRefresh: () => void;
@@ -15,17 +16,6 @@ export function PopupUnlocked({ onRefresh }: Props) {
 	const [searchText, setSearchText] = useState("");
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
-
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-				setSelected(null);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		// Once PopupUnlocked is not rendered anymore, remove the listener
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
 
 	const updateCredentials = async () => {
 		setCredentials(null);
@@ -45,31 +35,6 @@ export function PopupUnlocked({ onRefresh }: Props) {
 	const onEditCredential = async (id: number) => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=edit&credentialId=" + id) });
 		document.close();
-	};
-
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text);
-	};
-
-	const copyWebsite = () => {
-		if (selected) copyToClipboard(selected.website);
-	};
-
-	const copyUsername = () => {
-		if (selected) copyToClipboard(selected.username);
-	};
-
-	const copyPassword = async () => {
-		if (selected) {
-			if (selected.twoFactorEnabled) {
-				console.error("NOT IMPLEMENTED 2FA REQUIRED");
-			} else if (!selected.password) {
-				console.error("No password found for not 2FA protected item");
-			} else {
-				const password = await decryptData(selected.password.encryptedPassword, selected.password.iv, selected.password.authTag);
-				copyToClipboard(new TextDecoder().decode(password));
-			}
-		}
 	};
 
 	return (
@@ -111,35 +76,13 @@ export function PopupUnlocked({ onRefresh }: Props) {
 											Copy
 										</button>
 										{selected?.id === item.id && (
-											<div className="absolute right-0 top-8 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyWebsite();
-														setSelected(null);
-													}}
-												>
-													Website
-												</button>
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyUsername();
-														setSelected(null);
-													}}
-												>
-													Username
-												</button>
-												<button
-													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
-													onClick={() => {
-														copyPassword();
-														setSelected(null);
-													}}
-												>
-													Password
-												</button>
-											</div>
+											<LoginCopyDropdown
+												dropdownRef={dropdownRef}
+												item={item}
+												onClose={() => {
+													setSelected(null);
+												}}
+											/>
 										)}
 									</div>
 									<button
