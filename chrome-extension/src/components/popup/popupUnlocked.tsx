@@ -22,6 +22,7 @@ export function PopupUnlocked({ onRefresh }: Props) {
 			}
 		};
 		document.addEventListener("mousedown", handleClickOutside);
+		// Once PopupUnlocked is not rendered anymore, remove the listener
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
@@ -108,13 +109,18 @@ export function PopupUnlocked({ onRefresh }: Props) {
 									<p className="text-sm text-gray-600">{item.username}</p>
 								</div>
 								<div className="flex gap-3">
-									<div className="relative" ref={selected?.id === item.id ? dropdownRef : null}>
-										<button className="flex items-center gap-1 hover:cursor-pointer">
+									<div className="relative items-center my-auto" ref={selected?.id === item.id ? dropdownRef : null}>
+										<button
+											onClick={() => {
+												setSelected((v) => (v == item ? null : item));
+											}}
+											className="flex gap-1 hover:cursor-pointer"
+										>
 											<FiCopy size={14} />
 											Copy
 										</button>
 										{selected?.id === item.id && (
-											<div className="absolute right-0 top-11 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
+											<div className="absolute right-0 top-8 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
 												<button
 													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
 													onClick={() => {
