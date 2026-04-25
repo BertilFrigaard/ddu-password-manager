@@ -6,6 +6,8 @@ import { decryptData } from "../../services/crypto.js";
 import { logout } from "../../services/authService.js";
 import { ViewCredentials } from "./viewCredentials.js";
 import { FaPlus } from "react-icons/fa";
+import Modal from "../modal.js";
+import { createVault } from "../../services/vaultService.js";
 
 interface Props {
 	onRefresh: () => void;
@@ -13,7 +15,8 @@ interface Props {
 
 export function Unlocked({ onRefresh }: Props) {
 	const [vaults, setVaults] = useState<null | Vault[]>(null);
-	const [selected, setSelected] = useState<null | number>(null);
+	const [selected, setSelected] = useState<Vault | null>(null);
+	const [newFolderName, setNewFolderName] = useState<string | null>(null);
 
 	const updateVaults = async () => {
 		setVaults(null);
@@ -59,15 +62,22 @@ export function Unlocked({ onRefresh }: Props) {
 							vaults.map((v) => (
 								<button
 									onClick={() => {
-										setSelected(v.id);
+										setSelected(v);
 									}}
 									key={v.id}
-									className={(v.id == selected && "bg-gray-200 ") + " w-full text-left px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition-colors hover:cursor-pointer"}
+									className={(v == selected && "bg-gray-200 ") + " w-full text-left px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition-colors hover:cursor-pointer"}
 								>
 									{v.name}
 								</button>
 							))}
-						<button className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">New Folder</button>
+						<button
+							onClick={() => {
+								setNewFolderName("");
+							}}
+							className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+						>
+							New Folder
+						</button>
 					</div>
 				</aside>
 
@@ -75,6 +85,38 @@ export function Unlocked({ onRefresh }: Props) {
 					<ViewCredentials selectVault={selected} />
 				</div>
 			</div>
+
+			{newFolderName !== null && (
+				<Modal
+					onClose={() => {
+						setNewFolderName(null);
+					}}
+				>
+					<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-72 shadow-lg">
+						<h2 className="text-base font-semibold text-gray-800">New Folder</h2>
+						<input
+							className="px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
+							placeholder="Folder name"
+							value={newFolderName}
+							onChange={(e) => {
+								setNewFolderName(e.target.value);
+							}}
+							type="text"
+						/>
+						<button
+							onClick={async () => {
+								if (newFolderName) {
+									await createVault(newFolderName);
+									setNewFolderName(null);
+								}
+							}}
+							className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+						>
+							Create
+						</button>
+					</div>
+				</Modal>
+			)}
 		</div>
 	);
 }

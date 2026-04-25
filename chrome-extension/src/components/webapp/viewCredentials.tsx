@@ -1,30 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiCopy, FiEdit2, FiSearch } from "react-icons/fi";
-import { VaultItem } from "../../common/types.js";
+import { Vault, VaultItem } from "../../common/types.js";
 import { getCredentials } from "../../store/store.js";
 import { decryptData } from "../../services/crypto.js";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa6";
+import Modal from "../modal.js";
+import { CreateNewLogin } from "../modals/createNewLogin.js";
 
 interface Props {
-	selectVault: number | null;
+	selectVault: Vault | null;
 }
 
 export function ViewCredentials({ selectVault }: Props) {
 	const [credentials, setCredentials] = useState<null | VaultItem[]>(null);
 	const [searchText, setSearchText] = useState("");
-	const [selected, setSelected] = useState<null | VaultItem>(null);
 	const [showingPassword, setShowingPassword] = useState<null | number>(null);
 	const [decryptedPassword, setDecryptedPassword] = useState<null | string>(null);
+	const [whileNewLogin, setWhileNewLogin] = useState<boolean>(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
+	const [selected, setSelected] = useState<null | VaultItem>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+				setSelected(null);
+			}
+		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
 
 	const updateCredentials = async () => {
 		setCredentials(null);
-		const credentials = await getCredentials(selectVault);
+		const credentials = await getCredentials(selectVault?.id);
+		console.log(credentials);
 		setCredentials(credentials);
 	};
 
 	useEffect(() => {
 		updateCredentials();
-	}, []);
+	}, [selectVault]);
 
 	const updateDecryptedPassword = async () => {
 		if (showingPassword == null) {
@@ -73,7 +89,18 @@ export function ViewCredentials({ selectVault }: Props) {
 	};
 	return (
 		<div className="px-10 py-5">
-			<h2 className="text-3xl font-semibold mb-5">Your Logins</h2>
+			<div className="justify-between flex">
+				<h2 className="text-3xl font-semibold mb-5">{selectVault ? selectVault.name : "Your Logins"}</h2>
+				<button
+					onClick={() => {
+						setWhileNewLogin(true);
+					}}
+					className="font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+				>
+					<FaPlus />
+					New Login
+				</button>
+			</div>
 			<div className="relative w-full mb-4">
 				<FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
 				<input
@@ -126,15 +153,43 @@ export function ViewCredentials({ selectVault }: Props) {
 											<p>{decryptedPassword}</p>
 										</div>
 									)}
-									<button
-										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
-										onClick={() => {
-											setSelected(item);
-										}}
-									>
-										<FiCopy size={14} />
-										Copy
-									</button>
+									<div className="relative" ref={selected?.id === item.id ? dropdownRef : null}>
+										<button className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1" onClick={() => setSelected((prev) => (prev?.id === item.id ? null : item))}>
+											<FiCopy size={14} />
+											Copy
+										</button>
+										{selected?.id === item.id && (
+											<div className="absolute right-0 top-11 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyWebsite();
+														setSelected(null);
+													}}
+												>
+													Website
+												</button>
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyUsername();
+														setSelected(null);
+													}}
+												>
+													Username
+												</button>
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyPassword();
+														setSelected(null);
+													}}
+												>
+													Password
+												</button>
+											</div>
+										)}
+									</div>
 									<button
 										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
 										onClick={() => {
@@ -148,6 +203,13 @@ export function ViewCredentials({ selectVault }: Props) {
 							</div>
 						))}{" "}
 			</div>
+			{whileNewLogin && (
+				<CreateNewLogin
+					onClose={() => {
+						setWhileNewLogin(false);
+					}}
+				/>
+			)}
 		</div>
 	);
 }

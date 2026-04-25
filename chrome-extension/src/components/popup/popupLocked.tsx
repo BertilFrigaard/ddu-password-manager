@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "../services/authService.js";
+import { login } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 
 interface Props {

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiCopy, FiEdit2, FiExternalLink, FiLogOut, FiRefreshCw, FiSearch } from "react-icons/fi";
-import { logout } from "../services/authService.js";
-import { getCredentials } from "../store/store.js";
-import { VaultItem } from "../common/types.js";
-import { decryptData } from "../services/crypto.js";
+import { logout } from "../../services/authService.js";
+import { getCredentials } from "../../store/store.js";
+import { VaultItem } from "../../common/types.js";
+import { decryptData } from "../../services/crypto.js";
 
 interface Props {
 	onRefresh: () => void;
@@ -12,7 +12,18 @@ interface Props {
 export function PopupUnlocked({ onRefresh }: Props) {
 	const [credentials, setCredentials] = useState<null | VaultItem[]>(null);
 	const [searchText, setSearchText] = useState("");
+	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+				setSelected(null);
+			}
+		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
 
 	const updateCredentials = async () => {
 		setCredentials(null);
@@ -59,35 +70,6 @@ export function PopupUnlocked({ onRefresh }: Props) {
 		}
 	};
 
-	if (selected) {
-		return (
-			<div className="flex flex-col items-center justify-center w-72 min-h-48 px-6 py-8 bg-white">
-				<h1 className="text-2xl font-bold text-gray-800 mb-6">Vault</h1>
-
-				<div className="flex flex-col gap-2 w-full">
-					<button onClick={copyWebsite} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
-						Copy Website
-					</button>
-					<button onClick={copyUsername} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
-						Copy Username
-					</button>
-					<button onClick={copyPassword} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
-						Copy Password
-					</button>
-				</div>
-
-				<button
-					onClick={() => {
-						setSelected(null);
-					}}
-					className="w-full mt-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-				>
-					Return
-				</button>
-			</div>
-		);
-	}
-
 	return (
 		<div className="flex flex-col items-center justify-center w-72 min-h-48 px-6 py-8 bg-white">
 			<div className="flex items-center justify-between w-full mb-6">
@@ -126,15 +108,43 @@ export function PopupUnlocked({ onRefresh }: Props) {
 									<p className="text-sm text-gray-600">{item.username}</p>
 								</div>
 								<div className="flex gap-3">
-									<button
-										className="flex items-center gap-1 hover:cursor-pointer"
-										onClick={() => {
-											setSelected(item);
-										}}
-									>
-										<FiCopy size={14} />
-										Copy
-									</button>
+									<div className="relative" ref={selected?.id === item.id ? dropdownRef : null}>
+										<button className="flex items-center gap-1 hover:cursor-pointer">
+											<FiCopy size={14} />
+											Copy
+										</button>
+										{selected?.id === item.id && (
+											<div className="absolute right-0 top-11 z-10 flex flex-col bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyWebsite();
+														setSelected(null);
+													}}
+												>
+													Website
+												</button>
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyUsername();
+														setSelected(null);
+													}}
+												>
+													Username
+												</button>
+												<button
+													className="px-4 py-2 text-sm text-left hover:bg-gray-100 whitespace-nowrap hover:cursor-pointer"
+													onClick={() => {
+														copyPassword();
+														setSelected(null);
+													}}
+												>
+													Password
+												</button>
+											</div>
+										)}
+									</div>
 									<button
 										className="flex items-center gap-1 hover:cursor-pointer"
 										onClick={() => {
