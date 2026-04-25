@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { FiCopy, FiEdit2, FiExternalLink, FiLogOut, FiRefreshCw, FiSearch } from "react-icons/fi";
+import { FiCopy, FiEdit2, FiExternalLink, FiLogOut, FiRefreshCw } from "react-icons/fi";
+import { SearchInput } from "../input/searchInput.js";
 import { logout } from "../../services/authService.js";
 import { getCredentials } from "../../store/store.js";
 import { VaultItem } from "../../common/types.js";
@@ -86,17 +87,7 @@ export function PopupUnlocked({ onRefresh }: Props) {
 					Logout
 				</button>
 			</div>
-			<div className="relative w-full mb-4">
-				<FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-				<input
-					onChange={(e) => {
-						setSearchText(e.target.value);
-					}}
-					type="text"
-					placeholder="Search..."
-					className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
-				/>
-			</div>
+			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
 			<div className="flex flex-col gap-3 w-full">
 				{!credentials && <p>Loading...</p>}
 				{credentials &&

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { FiCopy, FiEdit2, FiExternalLink, FiLogOut, FiRefreshCw, FiSearch } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
+import { FormInput } from "../input/formInput.js";
 import { Vault } from "../../common/types.js";
 import { getVaults } from "../../store/store.js";
 import { decryptData } from "../../services/crypto.js";
 import { logout } from "../../services/authService.js";
 import { ViewCredentials } from "./viewCredentials.js";
 import { FaPlus } from "react-icons/fa";
-import Modal from "../modal.js";
+import Modal from "../modals/modal.js";
 import { createVault } from "../../services/vaultService.js";
 
 interface Props {
@@ -94,15 +95,7 @@ export function Unlocked({ onRefresh }: Props) {
 				>
 					<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-72 shadow-lg">
 						<h2 className="text-base font-semibold text-gray-800">New Folder</h2>
-						<input
-							className="px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
-							placeholder="Folder name"
-							value={newFolderName}
-							onChange={(e) => {
-								setNewFolderName(e.target.value);
-							}}
-							type="text"
-						/>
+						<FormInput placeholder="Folder name" value={newFolderName as string} onChange={setNewFolderName} />
 						<button
 							onClick={async () => {
 								if (newFolderName) {

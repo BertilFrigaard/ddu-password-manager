@@ -3,6 +3,7 @@ import { login, signup } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { ErrorBox } from "../info/errorBox.js";
+import { FormInput } from "../input/formInput.js";
 
 interface Props {
 	onRefresh: () => void;
@@ -55,24 +56,8 @@ export function Signup({ onRefresh }: Props) {
 		<div className="flex flex-col items-center justify-center w-72 min-h-48 px-6 py-8 border-gray-300 border rounded-md m-auto mt-[10%]">
 			<h1 className="text-2xl font-bold text-gray-800 mb-6">Vault</h1>
 			<div className="flex flex-col gap-3 w-full">
-				<input
-					className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
-					placeholder="Email"
-					type="text"
-					value={username}
-					onChange={(e) => {
-						setUsername(e.target.value);
-					}}
-				/>
-				<input
-					className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
-					placeholder="Confirm Email"
-					type="text"
-					value={confirmUsername}
-					onChange={(e) => {
-						setConfirmUsername(e.target.value);
-					}}
-				/>
+				<FormInput placeholder="Email" value={username} onChange={setUsername} />
+				<FormInput placeholder="Confirm Email" value={confirmUsername} onChange={setConfirmUsername} />
 				<div className="flex flex-col gap-1.5 bg-red-50 border border-red-300 rounded-md px-3 py-2.5">
 					<p className="text-xs font-bold text-red-700 uppercase tracking-wide flex gap-3">
 						<CiWarning size={16} /> Remember <CiWarning size={16} />
@@ -80,24 +65,8 @@ export function Signup({ onRefresh }: Props) {
 					<p className="text-xs text-red-600 leading-snug">This password locks all your credentials. It must be very strong - consider a passphrase like:</p>
 					<p className="text-xs font-mono font-semibold text-red-700 bg-red-100 rounded px-2 py-1">dog-apple-doctor-mini-table-running</p>
 				</div>
-				<input
-					className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
-					placeholder="Password"
-					type="password"
-					value={password}
-					onChange={(e) => {
-						setPassword(e.target.value);
-					}}
-				/>
-				<input
-					className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400"
-					placeholder="Confirm Password"
-					type="password"
-					value={confirmPassword}
-					onChange={(e) => {
-						setConfirmPassword(e.target.value);
-					}}
-				/>
+				<FormInput placeholder="Password" type="password" value={password} onChange={setPassword} />
+				<FormInput placeholder="Confirm Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
 				{errorMessage && <ErrorBox msg={errorMessage} />}
 				<button onClick={onSignup} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
 					Signup

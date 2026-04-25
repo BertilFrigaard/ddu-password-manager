@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { FiCopy, FiEdit2, FiSearch } from "react-icons/fi";
+import { FiCopy, FiEdit2 } from "react-icons/fi";
 import { Vault, VaultItem } from "../../common/types.js";
 import { getCredentials } from "../../store/store.js";
 import { decryptData } from "../../services/crypto.js";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
-import Modal from "../modal.js";
+import Modal from "../modals/modal.js";
 import { CreateNewLogin } from "../modals/createNewLogin.js";
+import { SearchInput } from "../input/searchInput.js";
 
 interface Props {
 	selectVault: Vault | null;
@@ -101,17 +102,7 @@ export function ViewCredentials({ selectVault }: Props) {
 					New Login
 				</button>
 			</div>
-			<div className="relative w-full mb-4">
-				<FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-				<input
-					onChange={(e) => {
-						setSearchText(e.target.value);
-					}}
-					type="text"
-					placeholder="Search..."
-					className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
-				/>
-			</div>
+			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
 			<div className="flex flex-col gap-3 w-full">
 				{!credentials && <p>Loading...</p>}
 				{credentials &&
