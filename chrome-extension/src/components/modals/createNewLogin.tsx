@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./modal.js";
 import { FormInput } from "../userinput/formInput.js";
 import { FaRegEye, FaRegEyeSlash, FaChevronDown } from "react-icons/fa";
 import { PasswordGenerator } from "../userinput/passwordGenerator.js";
 import { createCredential } from "../../services/credentialService.js";
 import { useVaults } from "../../context/VaultContext.js";
+import { useUser } from "../../context/UserContext.js";
 
 interface Props {
 	onClose: () => void;
@@ -12,10 +13,11 @@ interface Props {
 
 export function CreateNewLogin({ onClose }: Props) {
 	const { vaults, refreshVaults } = useVaults();
+	const { user } = useUser();
 	const [website, setWebsite] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [vaultId, setVaultId] = useState<number>(0);
+	const [vaultId, setVaultId] = useState<number>(user?.defaultVault ?? vaults?.[0]?.id ?? 0);
 	const [showPassword, setShowPassword] = useState(false);
 	const [showGenerator, setShowGenerator] = useState(false);
 
