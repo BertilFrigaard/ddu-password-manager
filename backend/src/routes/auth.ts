@@ -69,7 +69,7 @@ router.post("/login", async (req, res) => {
 	if (!user) {
 		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
 		console.log(`User with email '${email}' dosen't exist`);
-		res.status(400).json({ error: "Unknown email" });
+		res.status(403).json({ error: "Unknown email" });
 		return;
 	}
 
@@ -77,7 +77,7 @@ router.post("/login", async (req, res) => {
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(user.authKeyHash, "hex"))) {
 		console.log(`Wrong masterPassword trying to log into user with email ${email}`);
-		res.status(400).json({ error: "Wrong credentials" });
+		res.status(403).json({ error: "Wrong credentials" });
 		return;
 	}
 
