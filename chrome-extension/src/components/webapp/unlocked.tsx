@@ -2,20 +2,15 @@ import { useEffect, useState } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { FormInput } from "../userinput/formInput.js";
 import { Vault } from "../../common/types.js";
-import { getVaults } from "../../store/store.js";
-import { decryptData } from "../../services/crypto.js";
 import { logout } from "../../services/authService.js";
 import { ViewCredentials } from "./viewCredentials.js";
-import { FaPlus } from "react-icons/fa";
 import Modal from "../modals/modal.js";
 import { createVault } from "../../services/vaultService.js";
-import { useVaults, VaultProvider } from "../../context/VaultContext.js";
+import { useVaults } from "../../context/VaultContext.js";
+import { useUser } from "../../context/UserContext.js";
 
-interface Props {
-	onRefresh: () => void;
-}
-
-export function Unlocked({ onRefresh }: Props) {
+export function Unlocked() {
+	const { refreshUser } = useUser();
 	const { vaults, refreshVaults } = useVaults();
 	const [selected, setSelected] = useState<Vault | null>(null);
 	const [newFolderName, setNewFolderName] = useState<string | null>(null);
@@ -31,7 +26,7 @@ export function Unlocked({ onRefresh }: Props) {
 				<button
 					onClick={async () => {
 						await logout();
-						onRefresh();
+						refreshUser();
 					}}
 					className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
 				>

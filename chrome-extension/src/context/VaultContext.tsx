@@ -4,6 +4,7 @@ import { getVaults } from "../store/store.js";
 
 interface VaultContextValue {
 	vaults: Vault[] | null;
+	isLoading: boolean;
 	refreshVaults: () => Promise<void>;
 }
 
@@ -11,16 +12,19 @@ const VaultContext = createContext<VaultContextValue | null>(null);
 
 export function VaultProvider({ children }: { children: ReactNode }) {
 	const [vaults, setVaults] = useState<Vault[] | null>(null);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+
 	const refreshVaults = async () => {
-		setVaults(null);
+		setIsLoading(true);
 		setVaults(await getVaults());
+		setIsLoading(false);
 	};
 
 	useEffect(() => {
 		refreshVaults();
 	}, []);
 
-	return <VaultContext.Provider value={{ vaults, refreshVaults }}>{children}</VaultContext.Provider>;
+	return <VaultContext.Provider value={{ vaults, refreshVaults, isLoading }}>{children}</VaultContext.Provider>;
 }
 
 export function useVaults() {

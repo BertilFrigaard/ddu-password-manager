@@ -2,18 +2,16 @@ import { useState } from "react";
 import { login } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { FormInput } from "../userinput/formInput.js";
+import { useUser } from "../../context/UserContext.js";
 
-interface Props {
-	onRefresh: () => void;
-}
-
-export function Login({ onRefresh }: Props) {
+export function Login() {
+	const { refreshUser } = useUser();
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 
 	const onLogin = async () => {
 		await login(username, password);
-		onRefresh();
+		refreshUser();
 	};
 
 	const onSignup = async () => {

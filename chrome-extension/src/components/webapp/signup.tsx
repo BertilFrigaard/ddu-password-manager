@@ -4,12 +4,10 @@ import { BsBoxArrowUpRight } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { ErrorBox } from "../info/errorBox.js";
 import { FormInput } from "../userinput/formInput.js";
+import { useUser } from "../../context/UserContext.js";
 
-interface Props {
-	onRefresh: () => void;
-}
-
-export function Signup({ onRefresh }: Props) {
+export function Signup() {
+	const { refreshUser } = useUser();
 	const [username, setUsername] = useState("");
 	const [confirmUsername, setConfirmUsername] = useState("");
 	const [password, setPassword] = useState("");
@@ -20,7 +18,7 @@ export function Signup({ onRefresh }: Props) {
 		if (evalInputs()) {
 			await signup(username, password);
 			await login(username, password);
-			onRefresh();
+			refreshUser();
 		}
 	};
 

@@ -5,14 +5,19 @@ import { Signup } from "../components/webapp/signup.js";
 import { Login } from "../components/webapp/login.js";
 import { Unlocked } from "../components/webapp/unlocked.js";
 import { VaultProvider } from "../context/VaultContext.js";
+import { UserProvider, useUser } from "../context/UserContext.js";
+
+function App() {
+	return (
+		<UserProvider>
+			<MainPage />
+		</UserProvider>
+	);
+}
 
 function MainPage() {
-	const [view, setView] = useState<null | "signup">(null);
-	const [unlocked, setUnlocked] = useState<boolean | null>(null);
-
-	const refresh = async () => {
-		setUnlocked(await isUnlocked());
-	};
+	const [view, setView] = useState<"login" | "signup">("login");
+	const { isLoading, isLoggedIn } = useUser();
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -21,28 +26,26 @@ function MainPage() {
 		if (popup === "signup") {
 			setView("signup");
 		}
+	}, []);
 
-		refresh();
-	});
-
-	if (unlocked === null) {
+	if (isLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (unlocked) {
+	if (isLoggedIn) {
 		return (
 			<VaultProvider>
-				<Unlocked onRefresh={refresh} />
+				<Unlocked />
 			</VaultProvider>
 		);
 	} else {
 		if (view == "signup") {
-			return <Signup onRefresh={refresh} />;
+			return <Signup />;
 		} else {
-			return <Login onRefresh={refresh} />;
+			return <Login />;
 		}
 	}
 }
 
 const root = createRoot(document.getElementById("root")!);
-root.render(<MainPage />);
+root.render(<App />);
