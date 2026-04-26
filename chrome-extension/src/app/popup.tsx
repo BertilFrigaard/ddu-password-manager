@@ -4,34 +4,35 @@ import { useEffect, useState } from "react";
 import { PopupUnlocked } from "../components/popup/popupUnlocked.js";
 import { PopupLocked } from "../components/popup/popupLocked.js";
 import { VaultProvider } from "../context/VaultContext.js";
+import { UserProvider, useUser } from "../context/UserContext.js";
+
+function App() {
+	return (
+		<UserProvider>
+			<Popup />
+		</UserProvider>
+	);
+}
 
 function Popup() {
-	const [unlocked, setUnlocked] = useState<boolean | null>(null);
+	const { isLoading, isLoggedIn } = useUser();
 
-	const refresh = async () => {
-		setUnlocked(await isUnlocked());
-	};
-
-	useEffect(() => {
-		refresh();
-	}, []);
-
-	if (unlocked === null) {
+	if (isLoading) {
 		return (
 			<div>
-				<p>Loading</p>
+				<p>Loading...</p>
 			</div>
 		);
 	}
 
-	return unlocked ? (
+	return isLoggedIn ? (
 		<VaultProvider>
-			<PopupUnlocked onRefresh={refresh} />
+			<PopupUnlocked />
 		</VaultProvider>
 	) : (
-		<PopupLocked onRefresh={refresh} />
+		<PopupLocked />
 	);
 }
 
 const root = createRoot(document.getElementById("root")!);
-root.render(<Popup />);
+root.render(<App />);

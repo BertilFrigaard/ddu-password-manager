@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { isUnlocked } from "../services/authService.js";
 import { Signup } from "../components/webapp/signup.js";
 import { Login } from "../components/webapp/login.js";
 import { Unlocked } from "../components/webapp/unlocked.js";

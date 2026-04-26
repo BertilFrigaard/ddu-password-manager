@@ -6,26 +6,18 @@ import { getCredentials } from "../../store/store.js";
 import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
 import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
+import { useUser } from "../../context/UserContext.js";
+import { useVaults } from "../../context/VaultContext.js";
+import { selectCredentials } from "../../store/selectors.js";
 
-interface Props {
-	onRefresh: () => void;
-}
-
-export function PopupUnlocked({ onRefresh }: Props) {
-	const [credentials, setCredentials] = useState<null | VaultItem[]>(null);
+export function PopupUnlocked() {
+	const { refreshUser } = useUser();
+	const { vaults, refreshVaults } = useVaults();
 	const [searchText, setSearchText] = useState("");
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
 
-	const updateCredentials = async () => {
-		setCredentials(null);
-		const credentials = await getCredentials();
-		setCredentials(credentials);
-	};
-
-	useEffect(() => {
-		updateCredentials();
-	}, []);
+	const credentials = selectCredentials(vaults);
 
 	const onWebapp = async () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html") });
@@ -45,7 +37,7 @@ export function PopupUnlocked({ onRefresh }: Props) {
 					className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
 					onClick={async () => {
 						await logout();
-						onRefresh();
+						refreshUser();
 					}}
 				>
 					<FiLogOut size={14} />
@@ -107,7 +99,7 @@ export function PopupUnlocked({ onRefresh }: Props) {
 					className="flex items-center gap-1 hover:cursor-pointer"
 					onClick={() => {
 						// TODO: Get updates from server
-						updateCredentials();
+						refreshVaults();
 					}}
 				>
 					<FiRefreshCw size={14} />
