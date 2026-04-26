@@ -3,7 +3,7 @@ import { login, signup } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
 import { ErrorBox } from "../info/errorBox.js";
-import { FormInput } from "../input/formInput.js";
+import { FormInput } from "../userinput/formInput.js";
 
 interface Props {
 	onRefresh: () => void;

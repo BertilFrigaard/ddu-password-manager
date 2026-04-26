@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
-import { FormInput } from "../input/formInput.js";
+import { FormInput } from "../userinput/formInput.js";
 
 interface Props {
 	onRefresh: () => void;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FiCopy, FiEdit2, FiExternalLink, FiLogOut, FiRefreshCw } from "react-icons/fi";
-import { SearchInput } from "../input/searchInput.js";
+import { SearchInput } from "../userinput/searchInput.js";
 import { logout } from "../../services/authService.js";
 import { getCredentials } from "../../store/store.js";
 import { VaultItem } from "../../common/types.js";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiLogOut } from "react-icons/fi";
-import { FormInput } from "../input/formInput.js";
+import { FormInput } from "../userinput/formInput.js";
 import { Vault } from "../../common/types.js";
 import { getVaults } from "../../store/store.js";
 import { decryptData } from "../../services/crypto.js";
@@ -93,8 +93,8 @@ export function Unlocked({ onRefresh }: Props) {
 						setNewFolderName(null);
 					}}
 				>
-					<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-72 shadow-lg">
-						<h2 className="text-base font-semibold text-gray-800">New Folder</h2>
+					<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-120 shadow-lg">
+						<h2 className="text-lg font-semibold text-gray-800">New Folder</h2>
 						<FormInput placeholder="Folder name" value={newFolderName as string} onChange={setNewFolderName} />
 						<button
 							onClick={async () => {

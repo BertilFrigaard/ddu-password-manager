@@ -7,7 +7,7 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
 import Modal from "../modals/modal.js";
 import { CreateNewLogin } from "../modals/createNewLogin.js";
-import { SearchInput } from "../input/searchInput.js";
+import { SearchInput } from "../userinput/searchInput.js";
 import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
 
 interface Props {
