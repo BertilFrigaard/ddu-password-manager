@@ -32,7 +32,6 @@ export async function createCredential(website: string, username: string, passsw
 
 	if (!res.ok) {
 		logRequestError("createCredential", res);
-	} else {
-		console.log("SUCCESS");
+		throw Error("Failed to create new login");
 	}
 }

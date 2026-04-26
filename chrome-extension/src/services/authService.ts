@@ -2,7 +2,7 @@ import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../common/util.js";
-import { decryptData } from "./crypto.js";
+import { decryptData, decryptVaults } from "./crypto.js";
 import { VaultItem } from "../common/types.js";
 import { BACKEND } from "../common/config.js";
 import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setVaults } from "../store/store.js";
@@ -57,8 +57,7 @@ export async function signup(email: string, password: string) {
 
 	if (!res.ok) {
 		logRequestError("signup", res);
-	} else {
-		console.log("Success");
+		throw Error("Failed to signup");
 	}
 }
 
@@ -117,34 +116,15 @@ export async function login(email: string, password: string) {
 			setRefreshKey(resJson.refreshKey);
 			setUser({ id: resJson.user.id, email: resJson.user.email, defaultVault: resJson.user.defaultVault });
 
-			const decryptedVaults = await Promise.all(
-				resJson.vaults.map(async (vault: { id: number; name: string; items: any[] }) => ({
-					id: vault.id,
-					name: vault.name,
-					items: await Promise.all(
-						vault.items.map(async (item): Promise<VaultItem> => {
-							const infoBytes = await decryptData(item.encryptedInfo, item.iv, item.authTag);
-							const info = JSON.parse(new TextDecoder().decode(infoBytes));
-							return {
-								id: item.id,
-								website: info.website,
-								username: info.username,
-								twoFactorEnabled: item.twoFactorEnabled,
-								password: item.password ?? null,
-							};
-						}),
-					),
-				})),
-			);
+			const decryptedVaults = await decryptVaults(resJson.vaults);
 
 			setVaults(decryptedVaults);
-
-			console.log("SUCCESS");
 		} catch (err) {
 			throw err;
 		}
 	} else {
 		logRequestError("login", res);
+		throw Error("Failed to login");
 	}
 }
 

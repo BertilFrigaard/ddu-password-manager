@@ -5,7 +5,7 @@ import { Vault } from "../../common/types.js";
 import { logout } from "../../services/authService.js";
 import { ViewCredentials } from "./viewCredentials.js";
 import Modal from "../modals/modal.js";
-import { createVault } from "../../services/vaultService.js";
+import { createVault, getVaults } from "../../services/vaultService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 
@@ -90,6 +90,8 @@ export function Unlocked() {
 							onClick={async () => {
 								if (newFolderName) {
 									await createVault(newFolderName);
+									await getVaults();
+									await refreshVaults();
 									setNewFolderName(null);
 								}
 							}}

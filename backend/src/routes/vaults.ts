@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { insertVault, insertVaultItem } from "../store/vaults";
+import { getUserVaults, insertVault, insertVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
 import { requireVault } from "../middleware/vault";
@@ -34,6 +34,19 @@ router.post("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 	try {
 		const id = await insertVault(res.locals.user?.id, vaultName);
 		res.status(201).json({ vaultId: id });
+	} catch (e) {
+		return res.status(500).json({ error: e });
+	}
+});
+
+router.get("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
+	if (!res.locals.user) {
+		res.status(500).json({ error: "User id not found" });
+		return;
+	}
+	try {
+		const vaults = await getUserVaults(res.locals.user.id);
+		res.status(201).json({ vaults });
 	} catch (e) {
 		return res.status(500).json({ error: e });
 	}

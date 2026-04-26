@@ -1,5 +1,6 @@
 import { getSymmetricKey } from "../store/store.js";
 import { bytesToHex, hexToBytes } from "../common/util.js";
+import { Vault, VaultItem } from "../common/types.js";
 
 export async function decryptData(encryptedData: string, iv: string, authTag: string): Promise<Uint8Array> {
 	const symmetricKeyHex = await getSymmetricKey();
@@ -31,4 +32,26 @@ export async function encryptData(plaintext: Uint8Array<ArrayBuffer>): Promise<{
 	const authTag = ciphertextWithTag.slice(-16);
 
 	return { encryptedData: bytesToHex(ciphertext), iv: bytesToHex(iv), authTag: bytesToHex(authTag) };
+}
+
+export async function decryptVaults(vaults: any): Promise<Vault[]> {
+	return await Promise.all(
+		vaults.map(async (vault: { id: number; name: string; items: any[] }) => ({
+			id: vault.id,
+			name: vault.name,
+			items: await Promise.all(
+				vault.items.map(async (item): Promise<VaultItem> => {
+					const infoBytes = await decryptData(item.encryptedInfo, item.iv, item.authTag);
+					const info = JSON.parse(new TextDecoder().decode(infoBytes));
+					return {
+						id: item.id,
+						website: info.website,
+						username: info.username,
+						twoFactorEnabled: item.twoFactorEnabled,
+						password: item.password ?? null,
+					};
+				}),
+			),
+		})),
+	);
 }

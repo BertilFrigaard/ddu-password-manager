@@ -1,14 +1,40 @@
+import { Vault } from "../common/types.js";
 import { logRequestError } from "../common/util.js";
+import { setVaults } from "../store/store.js";
 import { authenticatedFetch } from "./authService.js";
+import { decryptVaults } from "./crypto.js";
 
 export async function createVault(vaultName: string) {
 	const res = await authenticatedFetch(`/vaults`, "POST", { vaultName });
 
 	if (!res.ok) {
 		logRequestError("createVault", res);
-		return false;
+		throw Error("Failed to create vault");
+	}
+}
+
+export async function getVaults() {
+	const res = await authenticatedFetch("/vaults", "GET");
+
+	if (!res.ok) {
+		logRequestError("getVaults", res);
+		throw Error("Failed to fetch vaults");
 	} else {
-		console.log("SUCCESS");
-		return true;
+		const json = await res.json();
+		const vaults = json.vaults;
+
+		if (vaults === undefined) {
+			console.error("fetch succeded but returned no vaults in res.json(). In method getVaults()");
+			throw Error("Failed to fetch vaults");
+		}
+
+		try {
+			const decryptedVaults = await decryptVaults(vaults);
+			setVaults(decryptedVaults);
+		} catch (e) {
+			console.error("Failed to decrypt vaults in method getVaults");
+			console.error(e);
+			throw Error("Failed to decrypt vaults");
+		}
 	}
 }

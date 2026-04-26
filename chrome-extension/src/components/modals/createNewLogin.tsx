@@ -6,6 +6,7 @@ import { PasswordGenerator } from "../userinput/passwordGenerator.js";
 import { createCredential } from "../../services/credentialService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
+import { getVaults } from "../../services/vaultService.js";
 
 interface Props {
 	onClose: () => void;
@@ -23,6 +24,7 @@ export function CreateNewLogin({ onClose }: Props) {
 
 	const onCreate = async () => {
 		await createCredential(website, username, password, vaultId);
+		await getVaults();
 		await refreshVaults();
 		onClose();
 	};
