@@ -3,19 +3,27 @@ import Modal from "./modal.js";
 import { FormInput } from "../userinput/formInput.js";
 import { FaRegEye, FaRegEyeSlash, FaChevronDown } from "react-icons/fa";
 import { PasswordGenerator } from "../userinput/passwordGenerator.js";
+import { createCredential } from "../../services/credentialService.js";
+import { useVaults } from "../../context/VaultContext.js";
 
 interface Props {
 	onClose: () => void;
 }
 
 export function CreateNewLogin({ onClose }: Props) {
+	const { vaults, refreshVaults } = useVaults();
 	const [website, setWebsite] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [vaultId, setVaultId] = useState<number>(0);
 	const [showPassword, setShowPassword] = useState(false);
 	const [showGenerator, setShowGenerator] = useState(false);
 
-	const onCreate = async () => {};
+	const onCreate = async () => {
+		await createCredential(website, username, password, vaultId);
+		await refreshVaults();
+		onClose();
+	};
 
 	return (
 		<Modal onClose={onClose}>
@@ -52,10 +60,21 @@ export function CreateNewLogin({ onClose }: Props) {
 				</div>
 				<div className="flex flex-col gap-1">
 					<label className="text-xs font-medium text-gray-600">Folder</label>
-					<select name="" id="" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors text-gray-800 bg-white">
-						<option value="">Vault</option>
-						<option value="">School Logins</option>
-						<option value="">Very Private</option>
+					<select
+						value={vaultId}
+						onChange={(e) => {
+							setVaultId(Number(e.target.value));
+						}}
+						name=""
+						id=""
+						className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-gray-400 transition-colors text-gray-800 bg-white"
+					>
+						{vaults &&
+							vaults.map((v) => (
+								<option key={v.id} value={v.id}>
+									{v.name}
+								</option>
+							))}
 					</select>
 				</div>
 				<button onClick={onCreate} className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">

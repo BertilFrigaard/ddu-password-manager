@@ -4,6 +4,7 @@ import { isUnlocked } from "../services/authService.js";
 import { Signup } from "../components/webapp/signup.js";
 import { Login } from "../components/webapp/login.js";
 import { Unlocked } from "../components/webapp/unlocked.js";
+import { VaultProvider } from "../context/VaultContext.js";
 
 function MainPage() {
 	const [view, setView] = useState<null | "signup">(null);
@@ -29,7 +30,11 @@ function MainPage() {
 	}
 
 	if (unlocked) {
-		return <Unlocked onRefresh={refresh} />;
+		return (
+			<VaultProvider>
+				<Unlocked onRefresh={refresh} />
+			</VaultProvider>
+		);
 	} else {
 		if (view == "signup") {
 			return <Signup onRefresh={refresh} />;

@@ -9,13 +9,15 @@ import Modal from "../modals/modal.js";
 import { CreateNewLogin } from "../modals/createNewLogin.js";
 import { SearchInput } from "../userinput/searchInput.js";
 import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
+import { useVaults } from "../../context/VaultContext.js";
+import { selectCredentials } from "../../store/selectors.js";
 
 interface Props {
 	selectVault: Vault | null;
 }
 
 export function ViewCredentials({ selectVault }: Props) {
-	const [credentials, setCredentials] = useState<null | VaultItem[]>(null);
+	const { vaults } = useVaults();
 	const [searchText, setSearchText] = useState("");
 	const [showingPassword, setShowingPassword] = useState<null | number>(null);
 	const [decryptedPassword, setDecryptedPassword] = useState<null | string>(null);
@@ -23,16 +25,7 @@ export function ViewCredentials({ selectVault }: Props) {
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
 
-	const updateCredentials = async () => {
-		setCredentials(null);
-		const credentials = await getCredentials(selectVault?.id);
-		console.log(credentials);
-		setCredentials(credentials);
-	};
-
-	useEffect(() => {
-		updateCredentials();
-	}, [selectVault]);
+	const credentials = selectCredentials(vaults, selectVault?.id);
 
 	const updateDecryptedPassword = async () => {
 		if (showingPassword == null) {

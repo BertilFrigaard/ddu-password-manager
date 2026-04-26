@@ -9,24 +9,19 @@ import { ViewCredentials } from "./viewCredentials.js";
 import { FaPlus } from "react-icons/fa";
 import Modal from "../modals/modal.js";
 import { createVault } from "../../services/vaultService.js";
+import { useVaults, VaultProvider } from "../../context/VaultContext.js";
 
 interface Props {
 	onRefresh: () => void;
 }
 
 export function Unlocked({ onRefresh }: Props) {
-	const [vaults, setVaults] = useState<null | Vault[]>(null);
+	const { vaults, refreshVaults } = useVaults();
 	const [selected, setSelected] = useState<Vault | null>(null);
 	const [newFolderName, setNewFolderName] = useState<string | null>(null);
 
-	const updateVaults = async () => {
-		setVaults(null);
-		const vaults = await getVaults();
-		setVaults(vaults);
-	};
-
 	useEffect(() => {
-		updateVaults();
+		refreshVaults();
 	}, []);
 
 	return (

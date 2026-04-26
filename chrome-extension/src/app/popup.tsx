@@ -3,6 +3,7 @@ import { isUnlocked } from "../services/authService.js";
 import { useEffect, useState } from "react";
 import { PopupUnlocked } from "../components/popup/popupUnlocked.js";
 import { PopupLocked } from "../components/popup/popupLocked.js";
+import { VaultProvider } from "../context/VaultContext.js";
 
 function Popup() {
 	const [unlocked, setUnlocked] = useState<boolean | null>(null);
@@ -23,7 +24,13 @@ function Popup() {
 		);
 	}
 
-	return unlocked ? <PopupUnlocked onRefresh={refresh} /> : <PopupLocked onRefresh={refresh} />;
+	return unlocked ? (
+		<VaultProvider>
+			<PopupUnlocked onRefresh={refresh} />
+		</VaultProvider>
+	) : (
+		<PopupLocked onRefresh={refresh} />
+	);
 }
 
 const root = createRoot(document.getElementById("root")!);
