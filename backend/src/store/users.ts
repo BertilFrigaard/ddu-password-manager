@@ -20,6 +20,15 @@ export async function insertUser(email: string, authKeyHash: string, serverSalt:
 	}
 }
 
+export async function deleteUserById(id: number) {
+	try {
+		await sql`DELETE FROM users WHERE id = ${id}`;
+	} catch (e) {
+		console.error(`Delete user request for id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
 export async function getUserByEmail(email: string) {
 	try {
 		const rows = await sql<User[]>`SELECT * FROM users WHERE LOWER(email) = LOWER(${email})`;

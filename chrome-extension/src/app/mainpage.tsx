@@ -27,6 +27,12 @@ function MainPage() {
 		}
 	}, []);
 
+	useEffect(() => {
+		if (isLoggedIn) {
+			setView("login");
+		}
+	}, [isLoggedIn]);
+
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}

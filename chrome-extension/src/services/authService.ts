@@ -2,32 +2,13 @@ import { argon2id } from "@noble/hashes/argon2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha512 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../common/util.js";
-import { decryptData, decryptVaults } from "./crypto.js";
+import { decryptData, decryptVaults, deriveKeys } from "./crypto.js";
 import { VaultItem } from "../common/types.js";
 import { BACKEND } from "../common/config.js";
 import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setUser2FA, setVaults } from "../store/store.js";
 
 export async function signup(email: string, password: string) {
-	const enc = new TextEncoder();
-
-	// 1. Argon2id — derive a master key from the user's password and email (used as salt).
-	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), {
-		p: 4, // parallelism
-		t: 3, // passes
-		m: 65536, // memory
-		dkLen: 32, // tagLength
-	});
-
-	// 2. HKDF stretch to 64 bytes
-	// Uses 0 salt because salt must be known
-	// Uses "DDU" label to ensure the stretch is domain specific
-	const stretchedMasterKey = hkdf(sha512, masterKey, new Uint8Array(0), enc.encode("DDU"), 64);
-
-	// 2.5 Split the stretched master key
-	// encKey: Used for encrypting the symmetric key never sent to server
-	// authKey: Sent to the server for accout verification
-	const encKey = stretchedMasterKey.slice(0, 32);
-	const authKey = stretchedMasterKey.slice(32, 64);
+	const { encKey, authKey } = await deriveKeys(email, password);
 
 	// 3. Generate a random symmetric key and encrypt it with encKey
 	const generatedSymmetricKey = crypto.getRandomValues(new Uint8Array(32));
@@ -229,4 +210,18 @@ export async function enableTwoFactorAuthentication(token: string) {
 	}
 
 	await setUser2FA(true);
+}
+
+export async function deleteAccount(email: string, password: string, token: null | string = null) {
+	const { authKey } = await deriveKeys(email, password);
+	const body: { authKey: string; token?: string } = { authKey: bytesToHex(authKey) };
+	if (token) body.token = token;
+	const res = await authenticatedFetch("/user", "DELETE", body);
+
+	if (!res.ok) {
+		logRequestError("deleteAccount", res);
+		throw Error("Failed to delete account");
+	}
+
+	await logout();
 }

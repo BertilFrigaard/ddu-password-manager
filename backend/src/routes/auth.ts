@@ -2,7 +2,7 @@ import { Router } from "express";
 import qrcode from "qrcode";
 import crypto from "node:crypto";
 import { authenticator } from "@otplib/preset-default";
-import { getUserByEmail, insertUser, setUserDefaultVault, setUserTwoFactorCode, setUserTwoFactorEnabled } from "../store/users";
+import { deleteUserById, getUserByEmail, insertUser, setUserDefaultVault, setUserTwoFactorCode, setUserTwoFactorEnabled } from "../store/users";
 import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET, TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
 import { insertSession, getSessionById } from "../store/sessions";
 import jwt from "jsonwebtoken";
@@ -214,8 +214,6 @@ router.post("/2fa", requireAuth({ attachUser: true }), async (req, res) => {
 		return;
 	}
 
-	console.log(res.locals.user);
-
 	const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
 	const isValid = authenticator.verify({ secret, token });
 
@@ -233,6 +231,49 @@ router.post("/2fa", requireAuth({ attachUser: true }), async (req, res) => {
 	}
 
 	res.sendStatus(201);
+});
+
+router.delete("/user", requireAuth({ attachUser: true }), async (req, res) => {
+	if (!res.locals.user) {
+		console.error("Request passed requireAuth but res.locals.user is not set");
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	const { token, authKey } = req.body;
+
+	if (res.locals.user.twoFactorEnabled) {
+		if (!token) {
+			res.status(403).json({ error: "You must delete using 2FA. Submit your 2FA token to confirm" });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token. User was not deleted" });
+			return;
+		}
+	}
+
+	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(res.locals.user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
+
+	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(res.locals.user.authKeyHash, "hex"))) {
+		console.log(`Wrong masterPassword trying to log into user with email ${res.locals.user.email}`);
+		res.status(403).json({ error: "Wrong credentials" });
+		return;
+	}
+
+	try {
+		await deleteUserById(res.locals.user.id);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Failed to delete account" });
+		return;
+	}
+
+	res.sendStatus(200);
 });
 
 export default router;
