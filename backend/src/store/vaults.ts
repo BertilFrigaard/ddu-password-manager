@@ -115,3 +115,23 @@ export async function insertVaultItem(vaultId: number, encryptedInfo: string, iv
 		throw new Error("Something went wrong");
 	}
 }
+
+export async function getDBVaultItemById(id: number): Promise<DBVaultItem | null> {
+	try {
+		const rows = await sql<DBVaultItem[]>`SELECT * FROM vault_items WHERE id = ${id}`;
+		return rows.length ? rows[0] : null;
+	} catch (e) {
+		console.error(`Get vault item request for item id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function getDBVaultItemPasswordByItemId(id: bigint): Promise<DBItemPassword | null> {
+	try {
+		const rows = await sql<DBItemPassword[]>`SELECT * FROM item_passwords WHERE vault_item_id = ${id.toString()}`;
+		return rows.length ? rows[0] : null;
+	} catch (e) {
+		console.error(`Get vault item password request for item id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}

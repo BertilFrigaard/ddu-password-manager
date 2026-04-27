@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { getUserVaults, insertVault, insertVaultItem } from "../store/vaults";
+import { getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
-import { requireVault } from "../middleware/vault";
+import { requireItem, requireVault } from "../middleware/vault";
+import { TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
+import { decrypt } from "../services/cryptoService";
+import { authenticator } from "@otplib/preset-default";
 
 const router = Router();
 
@@ -52,6 +55,46 @@ router.get("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 	}
 });
 
-//router.get("/vaultItem/:id/password")
+router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.item) {
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	if (!res.locals.item.twoFactorEnabled || !res.locals.user.twoFactorEnabled) {
+		res.status(403).json({ error: "This endpoint is only for 2FA logins" });
+		return;
+	}
+
+	const { token } = req.body;
+	if (!token) {
+		res.status(400).json({ error: "Token missing from request " });
+		return;
+	}
+
+	let password;
+	try {
+		password = await getDBVaultItemPasswordByItemId(res.locals.item.id);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Internal server error when fetching item" });
+		return;
+	}
+
+	if (!password) {
+		res.status(404).json({ error: "Password not found" });
+		return;
+	}
+
+	const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+	const isValid = authenticator.verify({ secret, token });
+
+	if (!isValid) {
+		res.status(403).json({ error: "Invalid token. 2FA was not enabled" });
+		return;
+	}
+
+	res.json({ password });
+});
 
 export default router;

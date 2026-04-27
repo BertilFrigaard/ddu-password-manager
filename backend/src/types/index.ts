@@ -4,6 +4,7 @@ declare global {
 			session?: { sessionId: bigint; userId: number };
 			user?: User;
 			vault?: DBVault;
+			item?: DBVaultItem;
 		}
 	}
 }

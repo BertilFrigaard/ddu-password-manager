@@ -1,5 +1,60 @@
 import { RequestHandler } from "express";
-import { getDBVaultById } from "../store/vaults";
+import { getDBVaultById, getDBVaultItemById } from "../store/vaults";
+
+interface ItemOptions {
+	checkOwnership?: boolean;
+	attachItem?: boolean;
+}
+
+export function requireItem(options?: ItemOptions): RequestHandler {
+	return async (req, res, next) => {
+		const raw = req.params.itemId;
+		const itemId = Number(raw);
+		if (isNaN(itemId)) {
+			res.status(400).json({ error: "Invalid itemId" });
+			return;
+		}
+
+		let item;
+		try {
+			item = await getDBVaultItemById(itemId);
+		} catch {
+			res.status(500).json({ error: "Something went wrong" });
+			return;
+		}
+
+		if (!item) {
+			res.status(404).json({ error: "Login not found" });
+			return;
+		}
+
+		if (options?.checkOwnership) {
+			let vault;
+			try {
+				vault = await getDBVaultById(item.vaultId);
+			} catch {
+				res.status(500).json({ error: "Something went wrong" });
+				return;
+			}
+
+			if (!vault) {
+				res.status(404).json({ error: "Could not verify ownership" });
+				return;
+			}
+
+			if (vault.userId !== res.locals.user?.id) {
+				res.status(403).json({ error: "Forbidden" });
+				return;
+			}
+		}
+
+		if (options?.attachItem) {
+			res.locals.item = item;
+		}
+
+		next();
+	};
+}
 
 interface VaultOptions {
 	checkOwnership?: boolean;
