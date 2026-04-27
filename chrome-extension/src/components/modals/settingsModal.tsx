@@ -11,8 +11,6 @@ export function SettingsModal({ onClose }: Props) {
 	const { user } = useUser();
 	const [setup2FA, setSetup2FA] = useState(false);
 
-	console.log(user?.twoFactorEnabled);
-
 	if (setup2FA) {
 		return <Setup2FA onClose={onClose} />;
 	} else {
