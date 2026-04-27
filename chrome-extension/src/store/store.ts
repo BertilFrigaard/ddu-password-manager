@@ -43,6 +43,14 @@ export async function setUser(user: StoredUser) {
 	await chrome.storage.session.set({ user });
 }
 
+export async function setUser2FA(enabled: boolean) {
+	const user = await getUser();
+	if (user) {
+		user.twoFactorEnabled = enabled;
+		setUser(user);
+	}
+}
+
 export async function getUser(): Promise<StoredUser | null> {
 	const result = await chrome.storage.session.get("user");
 	return result.user ?? null;

@@ -5,7 +5,7 @@ import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../common/uti
 import { decryptData, decryptVaults } from "./crypto.js";
 import { VaultItem } from "../common/types.js";
 import { BACKEND } from "../common/config.js";
-import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setVaults } from "../store/store.js";
+import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setUser2FA, setVaults } from "../store/store.js";
 
 export async function signup(email: string, password: string) {
 	const enc = new TextEncoder();
@@ -227,4 +227,6 @@ export async function enableTwoFactorAuthentication(token: string) {
 		logRequestError("enableTwoFactorAuthentication", res);
 		throw Error("Failed to setup 2FA");
 	}
+
+	await setUser2FA(true);
 }
