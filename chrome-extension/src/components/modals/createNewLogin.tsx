@@ -25,8 +25,14 @@ export function CreateNewLogin({ onClose }: Props) {
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
 
+	const vault = vaults?.find((v) => v.id == vaultId);
+
 	const onCreate = async () => {
-		await createCredential(website, username, password, vaultId, twoFactorEnabled);
+		if (vault?.twoFactorEnabled) {
+			await createCredential(website, username, password, vaultId, false);
+		} else {
+			await createCredential(website, username, password, vaultId, twoFactorEnabled);
+		}
 		await getVaults();
 		await refreshVaults();
 		onClose();
@@ -89,7 +95,11 @@ export function CreateNewLogin({ onClose }: Props) {
 					</div>
 					<div className="flex flex-col gap-1">
 						<label className="text-xs font-medium text-gray-600">Two Factor Authentication</label>
-						{user?.twoFactorEnabled ? (
+						{vault?.twoFactorEnabled ? (
+							<div className="flex items-center gap-2">
+								<span className="px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md">Two-Factor Authentication is enabled on folder</span>
+							</div>
+						) : user?.twoFactorEnabled ? (
 							<label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 border border-gray-200 rounded-md cursor-pointer select-none hover:bg-gray-50 transition-colors">
 								<input
 									type="checkbox"

@@ -36,9 +36,10 @@ export async function encryptData(plaintext: Uint8Array<ArrayBuffer>): Promise<{
 
 export async function decryptVaults(vaults: any): Promise<Vault[]> {
 	return await Promise.all(
-		vaults.map(async (vault: { id: number; name: string; items: any[] }) => ({
+		vaults.map(async (vault: { id: number; name: string; twoFactorEnabled: boolean; items: any[] }) => ({
 			id: vault.id,
 			name: vault.name,
+			twoFactorEnabled: vault.twoFactorEnabled,
 			items: await Promise.all(
 				vault.items.map(async (item): Promise<VaultItem> => {
 					const infoBytes = await decryptData(item.encryptedInfo, item.iv, item.authTag);
@@ -48,6 +49,7 @@ export async function decryptVaults(vaults: any): Promise<Vault[]> {
 						website: info.website,
 						username: info.username,
 						twoFactorEnabled: item.twoFactorEnabled,
+						twoFactorSource: item.twoFactorSource,
 						password: item.password ?? null,
 					};
 				}),
