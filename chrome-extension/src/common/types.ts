@@ -2,6 +2,7 @@ export interface StoredUser {
 	id: number;
 	email: string;
 	defaultVault: number | null;
+	twoFactorEnabled: boolean;
 }
 
 export interface ItemPassword {

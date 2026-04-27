@@ -1,11 +1,15 @@
 import { Router } from "express";
+import qrcode from "qrcode";
 import crypto from "node:crypto";
-import { getUserByEmail, insertUser, setUserDefaultVault } from "../store/users";
-import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET } from "../config";
+import { authenticator } from "@otplib/preset-default";
+import { getUserByEmail, insertUser, setUserDefaultVault, setUserTwoFactorCode, setUserTwoFactorEnabled } from "../store/users";
+import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET, TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
 import { insertSession, getSessionById } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
 import { getUserVaults, insertVault } from "../store/vaults";
+import { requireAuth } from "../middleware/auth";
+import { decrypt, encrypt } from "../services/cryptoService";
 
 const router = Router();
 
@@ -114,7 +118,7 @@ router.post("/login", async (req, res) => {
 	const vaults = await getUserVaults(user.id);
 
 	// TODO: Maybe the email should also be filtered away as it might be seen as sensitive
-	const { authKeyHash: _, serverSalt: __, ...userWithoutSensitiveData } = user;
+	const { authKeyHash: _, serverSalt: __, twoFactorSecretCiphertext: ___, twoFactorSecretIv: ____, twoFactorSecretTag: _____, ...userWithoutSensitiveData } = user;
 	res.json({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 });
 
@@ -164,6 +168,71 @@ router.post("/refresh", async (req, res) => {
 	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15m" });
 
 	res.json({ accessToken });
+});
+
+router.get("/2fa", requireAuth({ attachUser: true }), async (req, res) => {
+	if (!res.locals.user) {
+		res.status(500).json({ error: "User validated but not attached" });
+		return;
+	}
+	if (res.locals.user.twoFactorEnabled) {
+		res.status(409).json({ error: "Account already has 2FA activated" });
+		return;
+	}
+
+	const secret = authenticator.generateSecret();
+	const otpauth = authenticator.keyuri(res.locals.user.email, "DDUManager", secret);
+	const qrstring = await qrcode.toDataURL(otpauth);
+
+	const encrypted = encrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, secret);
+	try {
+		await setUserTwoFactorCode(res.locals.user.id, encrypted.encryptedString, encrypted.iv, encrypted.authTag);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	res.status(201).json({ qrstring });
+});
+
+router.post("/2fa", requireAuth({ attachUser: true }), async (req, res) => {
+	const { token } = req.body;
+
+	if (!token) {
+		res.status(400).json({ error: "Token missing from request " });
+		return;
+	}
+
+	if (!res.locals.user) {
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	if (res.locals.user.twoFactorEnabled) {
+		res.status(409).json({ error: "Account already has 2FA activated" });
+		return;
+	}
+
+	console.log(res.locals.user);
+
+	const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+	const isValid = authenticator.verify({ secret, token });
+
+	if (!isValid) {
+		res.status(403).json({ error: "Invalid token. 2FA was not enabled" });
+		return;
+	}
+
+	try {
+		await setUserTwoFactorEnabled(res.locals.user.id, true);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Something went wrong. 2FA was not enabled" });
+		return;
+	}
+
+	res.sendStatus(201);
 });
 
 export default router;

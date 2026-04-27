@@ -17,6 +17,10 @@ export interface User {
 	authKeyHash: string;
 	serverSalt: string;
 	defaultVault: number | null;
+	twoFactorSecretCiphertext: string;
+	twoFactorSecretIv: string;
+	twoFactorSecretTag: string;
+	twoFactorEnabled: boolean;
 }
 
 export interface Session {

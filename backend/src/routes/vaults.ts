@@ -52,4 +52,6 @@ router.get("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 	}
 });
 
+//router.get("/vaultItem/:id/password")
+
 export default router;

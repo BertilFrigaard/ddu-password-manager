@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiSettings } from "react-icons/fi";
 import { FormInput } from "../userinput/formInput.js";
 import { Vault } from "../../common/types.js";
 import { logout } from "../../services/authService.js";
@@ -8,12 +8,18 @@ import Modal from "../modals/modal.js";
 import { createVault, getVaults } from "../../services/vaultService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
+import { IoIosHelpCircleOutline } from "react-icons/io";
+import { MdOutlineVpnKey } from "react-icons/md";
+import { SettingsModal } from "../modals/settingsModal.js";
+import { HelpModal } from "../modals/helpModal.js";
 
 export function Unlocked() {
 	const { refreshUser } = useUser();
 	const { vaults, refreshVaults } = useVaults();
 	const [selected, setSelected] = useState<Vault | null>(null);
 	const [newFolderName, setNewFolderName] = useState<string | null>(null);
+	const [showSettings, setShowSettings] = useState(false);
+	const [showHelp, setShowHelp] = useState(false);
 
 	useEffect(() => {
 		refreshVaults();
@@ -22,7 +28,27 @@ export function Unlocked() {
 	return (
 		<div className="flex flex-col h-full min-h-screen bg-gray-50">
 			<div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
-				<h1 className="text-xl font-bold text-gray-800 tracking-tight">DDU Vault</h1>
+				<div className="flex gap-20">
+					<h1 className="text-xl font-bold text-gray-800 tracking-tight">DDU Vault</h1>
+					<button
+						onClick={async () => {
+							setShowSettings(true);
+						}}
+						className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
+					>
+						<FiSettings size={15} />
+						Settings
+					</button>
+					<button
+						onClick={async () => {
+							setShowHelp(true);
+						}}
+						className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
+					>
+						<IoIosHelpCircleOutline size={15} />
+						Help
+					</button>
+				</div>
 				<button
 					onClick={async () => {
 						await logout();
@@ -76,6 +102,22 @@ export function Unlocked() {
 					<ViewCredentials selectVault={selected} />
 				</div>
 			</div>
+
+			{showSettings && (
+				<SettingsModal
+					onClose={() => {
+						setShowSettings(false);
+					}}
+				/>
+			)}
+
+			{showHelp && (
+				<HelpModal
+					onClose={() => {
+						setShowHelp(false);
+					}}
+				/>
+			)}
 
 			{newFolderName !== null && (
 				<Modal

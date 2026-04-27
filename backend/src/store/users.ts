@@ -48,3 +48,21 @@ export async function setUserDefaultVault(userId: number, vaultId: number | null
 		throw new Error("Something went wrong");
 	}
 }
+
+export async function setUserTwoFactorCode(userId: number, ciphertext: string, iv: string, tag: string) {
+	try {
+		await sql`UPDATE users SET two_factor_secret_ciphertext = ${ciphertext}, two_factor_secret_iv = ${iv}, two_factor_secret_tag = ${tag} WHERE id = ${userId}`;
+	} catch (e) {
+		console.error(`Set user two factor code for user with id ${userId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function setUserTwoFactorEnabled(userId: number, enabled: boolean) {
+	try {
+		await sql`UPDATE users SET two_factor_enabled = ${enabled} WHERE id = ${userId}`;
+	} catch (e) {
+		console.error(`Set user two factor enabled for user with id ${userId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}

@@ -114,7 +114,7 @@ export async function login(email: string, password: string) {
 			setSymmetricKey(bytesToHex(new Uint8Array(symmetricKeyBuffer)));
 			setAccessToken(resJson.accessToken);
 			setRefreshKey(resJson.refreshKey);
-			setUser({ id: resJson.user.id, email: resJson.user.email, defaultVault: resJson.user.defaultVault });
+			setUser({ id: resJson.user.id, email: resJson.user.email, defaultVault: resJson.user.defaultVault, twoFactorEnabled: resJson.user.twoFactorEnabled });
 
 			const decryptedVaults = await decryptVaults(resJson.vaults);
 
@@ -201,4 +201,30 @@ export async function authenticatedFetch(endpoint: string, method: string, body?
 	}
 
 	return res;
+}
+
+export async function getTwoFactorAuthenticationQRCode() {
+	const res = await authenticatedFetch("/2fa", "GET");
+
+	if (!res.ok) {
+		logRequestError("getTwoFactorAuthenticationQRCode", res);
+		throw Error("Failed to get 2FA setup QRcode");
+	}
+
+	const resJson = await res.json();
+
+	if (!resJson.qrstring) {
+		throw Error("2FA Setup request succeded, but failed to decode qrstring");
+	}
+
+	return resJson.qrstring as string;
+}
+
+export async function enableTwoFactorAuthentication(token: string) {
+	const res = await authenticatedFetch("/2fa", "POST", { token });
+
+	if (!res.ok) {
+		logRequestError("enableTwoFactorAuthentication", res);
+		throw Error("Failed to setup 2FA");
+	}
 }
