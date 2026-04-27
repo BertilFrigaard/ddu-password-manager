@@ -55,7 +55,8 @@ export async function getUserVaults(userId: number) {
 
 	let passwords;
 	try {
-		const itemIds = items.filter((v) => !v.twoFactorEnabled).map((v) => v.id.toString());
+		const twoFactorVaults = vaults.filter((v) => v.twoFactorEnabled).map((v) => v.id);
+		const itemIds = items.filter((v) => !v.twoFactorEnabled && !twoFactorVaults.includes(v.vaultId)).map((v) => v.id.toString());
 		passwords = await sql<DBItemPassword[]>`SELECT * FROM item_passwords WHERE vault_item_id = ANY(${sql.array(itemIds)}::bigint[])`;
 	} catch (e) {
 		console.error(`Get passwords request for user with id ${userId} threw error: \n ${e}`);
@@ -75,7 +76,8 @@ export async function getUserVaults(userId: number) {
 					encryptedInfo: item.encryptedInfo,
 					iv: item.iv,
 					authTag: item.authTag,
-					twoFactorEnabled: item.twoFactorEnabled,
+					twoFactorEnabled: v.twoFactorEnabled || item.twoFactorEnabled,
+					twoFactorSource: v.twoFactorEnabled ? 1 : 0,
 					password: pw ? { encryptedPassword: pw.encryptedPassword, iv: pw.iv, authTag: pw.authTag } : null,
 				};
 			}),
