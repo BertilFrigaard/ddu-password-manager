@@ -2,7 +2,7 @@ import { encryptData } from "./crypto.js";
 import { logRequestError } from "../common/util.js";
 import { authenticatedFetch } from "./authService.js";
 
-export async function createCredential(website: string, username: string, passsword: string | null, vaultId: number) {
+export async function createCredential(website: string, username: string, passsword: string | null, vaultId: number, twoFactorEnabled: boolean) {
 	const enc = new TextEncoder();
 
 	const encryptedInfo = await encryptData(enc.encode(JSON.stringify({ website, username })));
@@ -14,7 +14,7 @@ export async function createCredential(website: string, username: string, passsw
 			encryptedInfo: encryptedInfo.encryptedData,
 			iv: encryptedInfo.iv,
 			authTag: encryptedInfo.authTag,
-			twoFactorEnabled: false,
+			twoFactorEnabled,
 			ivPassword: encryptedPassword.iv,
 			encryptedPassword: encryptedPassword.encryptedData,
 			authTagPassword: encryptedPassword.authTag,
@@ -24,7 +24,7 @@ export async function createCredential(website: string, username: string, passsw
 			encryptedInfo: encryptedInfo.encryptedData,
 			iv: encryptedInfo.iv,
 			authTag: encryptedInfo.authTag,
-			twoFactorEnabled: false,
+			twoFactorEnabled,
 		};
 	}
 
