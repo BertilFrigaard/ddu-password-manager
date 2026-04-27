@@ -67,7 +67,6 @@ export interface VaultItem {
 	iv: string;
 	authTag: string;
 	twoFactorEnabled: boolean;
-	twoFactorSource: number; // 0: self, 1: folder
 	password: ItemPassword | null;
 }
 

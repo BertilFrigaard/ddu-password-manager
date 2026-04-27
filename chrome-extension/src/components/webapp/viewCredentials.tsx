@@ -12,6 +12,7 @@ import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { selectCredentials } from "../../store/selectors.js";
 import { Fetch2FA } from "../modals/fetch2FA.js";
+import { EditLogin } from "../modals/editLogin.js";
 
 interface Props {
 	selectVault: Vault | null;
@@ -26,6 +27,7 @@ export function ViewCredentials({ selectVault }: Props) {
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [selected, setSelected] = useState<null | VaultItem>(null);
 	const [requestWith2FA, setRequestWith2FA] = useState(false);
+	const [editItem, setEditItem] = useState<VaultItem | null>(null);
 
 	const credentials = selectCredentials(vaults, selectVault?.id);
 
@@ -60,10 +62,6 @@ export function ViewCredentials({ selectVault }: Props) {
 	useEffect(() => {
 		updateDecryptedPassword();
 	}, [showingPassword]);
-
-	const onEditCredential = async (id: number) => {
-		console.error("NOT IMPLEMENTED");
-	};
 
 	return (
 		<div className="px-10 py-5">
@@ -151,7 +149,7 @@ export function ViewCredentials({ selectVault }: Props) {
 									<button
 										className="flex items-center justify-center hover:cursor-pointer bg-gray-200 hover:bg-gray-300 rounded h-10 px-3 gap-1"
 										onClick={() => {
-											onEditCredential(item.id);
+											setEditItem(item);
 										}}
 									>
 										<FiEdit2 size={14} />
@@ -166,6 +164,14 @@ export function ViewCredentials({ selectVault }: Props) {
 					onClose={() => {
 						setWhileNewLogin(false);
 					}}
+				/>
+			)}
+			{editItem && (
+				<EditLogin
+					onClose={() => {
+						setEditItem(null);
+					}}
+					vaultItem={editItem}
 				/>
 			)}
 		</div>

@@ -77,7 +77,6 @@ export async function getUserVaults(userId: number) {
 					iv: item.iv,
 					authTag: item.authTag,
 					twoFactorEnabled: v.twoFactorEnabled || item.twoFactorEnabled,
-					twoFactorSource: v.twoFactorEnabled ? 1 : 0,
 					password: pw ? { encryptedPassword: pw.encryptedPassword, iv: pw.iv, authTag: pw.authTag } : null,
 				};
 			}),

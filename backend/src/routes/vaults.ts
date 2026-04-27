@@ -66,11 +66,6 @@ router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), re
 		return;
 	}
 
-	if (!res.locals.item.twoFactorEnabled || !res.locals.user.twoFactorEnabled) {
-		res.status(403).json({ error: "This endpoint is only for 2FA logins" });
-		return;
-	}
-
 	const { token } = req.body;
 	if (!token) {
 		res.status(400).json({ error: "Token missing from request " });
@@ -95,7 +90,7 @@ router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), re
 	const isValid = authenticator.verify({ secret, token });
 
 	if (!isValid) {
-		res.status(403).json({ error: "Invalid token. 2FA was not enabled" });
+		res.status(403).json({ error: "Invalid token." });
 		return;
 	}
 
