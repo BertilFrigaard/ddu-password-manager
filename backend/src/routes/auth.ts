@@ -115,7 +115,6 @@ router.post("/login", async (req, res) => {
 
 	// TODO: Maybe the email should also be filtered away as it might be seen as sensitive
 	const { authKeyHash: _, serverSalt: __, ...userWithoutSensitiveData } = user;
-	console.log({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 	res.json({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 });
 

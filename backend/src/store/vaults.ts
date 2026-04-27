@@ -53,10 +53,9 @@ export async function getUserVaults(userId: number) {
 		throw new Error("Something went wrong");
 	}
 
-	// TODO: untested at the moment
 	let passwords;
 	try {
-		const itemIds = items.map((v) => v.id.toString());
+		const itemIds = items.filter((v) => !v.twoFactorEnabled).map((v) => v.id.toString());
 		passwords = await sql<DBItemPassword[]>`SELECT * FROM item_passwords WHERE vault_item_id = ANY(${sql.array(itemIds)}::bigint[])`;
 	} catch (e) {
 		console.error(`Get passwords request for user with id ${userId} threw error: \n ${e}`);

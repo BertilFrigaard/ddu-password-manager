@@ -14,7 +14,6 @@ if (!process.env.SESSION_JWT_SECRET) {
 }
 
 if (!process.env.PGUSER || !process.env.PGPASSWORD || !process.env.PGHOST || !process.env.PGPORT || !process.env.PGDATABASE) {
-	console.log(process.env);
 	throw new Error("PostgreSQL enviroment variables not set");
 }
 
