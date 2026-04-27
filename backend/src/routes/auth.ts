@@ -43,7 +43,7 @@ router.post("/signup", async (req, res) => {
 		const userId = await insertUser(email, authKeyHash.toString("hex"), serverSalt.toString("hex"), encryptedKey, iv, authTag);
 		try {
 			// Create a default vault to the user
-			const vaultId = await insertVault(userId, "Vault");
+			const vaultId = await insertVault(userId, "Vault", false);
 			try {
 				// Set the default vault for the user
 				await setUserDefaultVault(userId, vaultId);

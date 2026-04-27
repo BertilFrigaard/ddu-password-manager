@@ -35,6 +35,7 @@ export interface DBVault {
 	id: number;
 	userId: number;
 	name: string;
+	twoFactorEnabled: boolean;
 }
 
 export interface DBVaultItem {
@@ -57,6 +58,7 @@ export interface Vault {
 	id: number;
 	name: string;
 	items: VaultItem[];
+	twoFactorEnabled: boolean;
 }
 
 export interface VaultItem {

@@ -12,12 +12,13 @@ import { IoIosHelpCircleOutline } from "react-icons/io";
 import { MdOutlineVpnKey } from "react-icons/md";
 import { SettingsModal } from "../modals/settingsModal.js";
 import { HelpModal } from "../modals/helpModal.js";
+import { CreateFolder } from "../modals/createFolder.js";
 
 export function Unlocked() {
 	const { refreshUser } = useUser();
 	const { vaults, refreshVaults } = useVaults();
 	const [selected, setSelected] = useState<Vault | null>(null);
-	const [newFolderName, setNewFolderName] = useState<string | null>(null);
+	const [showNewFolder, setShowNewFolder] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
 	const [showHelp, setShowHelp] = useState(false);
 
@@ -89,7 +90,7 @@ export function Unlocked() {
 							))}
 						<button
 							onClick={() => {
-								setNewFolderName("");
+								setShowNewFolder(true);
 							}}
 							className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
 						>
@@ -119,30 +120,12 @@ export function Unlocked() {
 				/>
 			)}
 
-			{newFolderName !== null && (
-				<Modal
+			{showNewFolder && (
+				<CreateFolder
 					onClose={() => {
-						setNewFolderName(null);
+						setShowNewFolder(false);
 					}}
-				>
-					<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-120 shadow-lg">
-						<h2 className="text-lg font-semibold text-gray-800">New Folder</h2>
-						<FormInput placeholder="Folder name" value={newFolderName as string} onChange={setNewFolderName} />
-						<button
-							onClick={async () => {
-								if (newFolderName) {
-									await createVault(newFolderName);
-									await getVaults();
-									await refreshVaults();
-									setNewFolderName(null);
-								}
-							}}
-							className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
-						>
-							Create
-						</button>
-					</div>
-				</Modal>
+				/>
 			)}
 		</div>
 	);

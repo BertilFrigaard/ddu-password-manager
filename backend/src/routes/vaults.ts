@@ -24,18 +24,23 @@ router.post("/vaults/:vaultId/items", requireAuth(), requireVault({ attachVault:
 });
 
 router.post("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
-	const { vaultName } = req.body;
+	const { vaultName, twoFactorEnabled } = req.body;
 	if (!vaultName || typeof vaultName !== "string") {
 		res.status(400).json({ error: "Invalid vault name" });
 		return;
 	}
 
+	if (!twoFactorEnabled || typeof twoFactorEnabled !== "boolean") {
+		res.status(400).json({ error: "Invalid value for twoFactorEnabled" });
+		return;
+	}
+
 	if (!res.locals.user) {
-		res.status(500).json({ error: "User id not found" });
+		res.status(500).json({ error: "User not found" });
 		return;
 	}
 	try {
-		const id = await insertVault(res.locals.user?.id, vaultName);
+		const id = await insertVault(res.locals.user?.id, vaultName, twoFactorEnabled);
 		res.status(201).json({ vaultId: id });
 	} catch (e) {
 		return res.status(500).json({ error: e });

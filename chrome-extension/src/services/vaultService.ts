@@ -4,8 +4,8 @@ import { setVaults } from "../store/store.js";
 import { authenticatedFetch } from "./authService.js";
 import { decryptVaults } from "./crypto.js";
 
-export async function createVault(vaultName: string) {
-	const res = await authenticatedFetch(`/vaults`, "POST", { vaultName });
+export async function createVault(vaultName: string, twoFactorEnabled: boolean) {
+	const res = await authenticatedFetch(`/vaults`, "POST", { vaultName, twoFactorEnabled });
 
 	if (!res.ok) {
 		logRequestError("createVault", res);

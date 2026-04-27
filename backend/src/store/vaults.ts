@@ -1,11 +1,11 @@
 import { DBVault, DBVaultItem, DBItemPassword, Vault, ItemPassword } from "../types";
 import { sql } from "./db";
 
-export async function insertVault(userId: number, name: string) {
+export async function insertVault(userId: number, name: string, twoFactorEnabled: boolean) {
 	try {
 		const rows = await sql<{ id: number }[]>`
-            INSERT INTO vaults (user_id, name)
-            VALUES (${userId}, ${name})
+            INSERT INTO vaults (user_id, name, two_factor_enabled)
+            VALUES (${userId}, ${name}, ${twoFactorEnabled})
             RETURNING id
         `;
 		if (rows.length) {
@@ -65,6 +65,7 @@ export async function getUserVaults(userId: number) {
 	const formattedVaults: Vault[] = vaults.map((v) => ({
 		id: v.id,
 		name: v.name,
+		twoFactorEnabled: v.twoFactorEnabled,
 		items: items
 			.filter((item) => item.vaultId === v.id)
 			.map((item) => {

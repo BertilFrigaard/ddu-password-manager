@@ -24,5 +24,6 @@ export interface VaultItem {
 export interface Vault {
 	id: number;
 	name: string;
+	twoFactorEnabled: boolean;
 	items: VaultItem[];
 }
