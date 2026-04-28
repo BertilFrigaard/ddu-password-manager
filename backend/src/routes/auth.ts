@@ -112,7 +112,7 @@ router.post("/login", async (req, res) => {
 			userId: user.id,
 		},
 		SESSION_JWT_SECRET,
-		{ expiresIn: "15s" },
+		{ expiresIn: "15m" },
 	);
 
 	const vaults = await getUserVaults(user.id);
@@ -165,7 +165,7 @@ router.post("/refresh", async (req, res) => {
 		return;
 	}
 
-	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15s" });
+	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15m" });
 
 	res.json({ accessToken });
 });
