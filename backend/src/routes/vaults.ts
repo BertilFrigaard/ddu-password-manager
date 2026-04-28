@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem } from "../store/vaults";
+import { getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
 import { requireItem, requireVault } from "../middleware/vault";
@@ -30,7 +30,7 @@ router.post("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 		return;
 	}
 
-	if (!twoFactorEnabled || typeof twoFactorEnabled !== "boolean") {
+	if (typeof twoFactorEnabled !== "boolean") {
 		res.status(400).json({ error: "Invalid value for twoFactorEnabled" });
 		return;
 	}
@@ -60,14 +60,90 @@ router.get("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 	}
 });
 
-router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
+router.post("/vaultItem/:itemId", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
 	if (!res.locals.user || !res.locals.item) {
-		res.status(500).json({ error: "Something went wrong" });
+		res.status(500).json({ error: "Internal error. Failed to fetch user or item" });
 		return;
 	}
 
-	if (!res.locals.item.twoFactorEnabled || !res.locals.user.twoFactorEnabled) {
-		res.status(403).json({ error: "This endpoint is only for 2FA logins" });
+	const { vaultId, encryptedInfo, iv, authTag, twoFactorEnabled, ivPassword, encryptedPassword, authTagPassword, token } = req.body;
+	if (!encryptedInfo || !iv || !authTag || typeof twoFactorEnabled !== "boolean") {
+		res.status(400).json({ error: "Missing required fields: encryptedInfo, iv, authTag, twoFactorEnabled" });
+		return;
+	}
+
+	let sourceVault;
+	try {
+		sourceVault = await getDBVaultById(res.locals.item.vaultId);
+		if (!sourceVault) {
+			throw Error("sourceVault = null");
+		}
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Failed to find original folder of item" });
+		return;
+	}
+
+	let vault;
+	if (typeof vaultId === "number") {
+		try {
+			vault = await getDBVaultById(vaultId);
+			if (!vault) {
+				res.status(404).json({ error: "Selected folder not found" });
+				return;
+			}
+			if (vault.userId !== res.locals.user.id) {
+				res.status(403).json({ error: "No access" });
+				return;
+			}
+		} catch (e) {
+			console.error(e);
+			res.status(500).json({ error: "Internal server error" });
+			return;
+		}
+	} else if (typeof vaultId !== "undefined") {
+		res.status(400).json({ error: "vaultId must either be undefined or a number" });
+		return;
+	}
+
+	if ((res.locals.item.twoFactorEnabled && twoFactorEnabled === false) || (sourceVault.twoFactorEnabled && vault && !vault.twoFactorEnabled)) {
+		if (!token) {
+			res.status(400).json({ error: "Token missing from request. 2FA required for the requested update" });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token." });
+			return;
+		}
+	}
+
+	let password: ItemPassword | null | undefined = undefined;
+	if (ivPassword !== undefined || encryptedPassword !== undefined || authTagPassword !== undefined) {
+		if (ivPassword && encryptedPassword && authTagPassword) {
+			password = { iv: ivPassword, encryptedPassword, authTag: authTagPassword };
+		} else if (!ivPassword && !encryptedPassword && !authTagPassword) {
+			password = null;
+		} else {
+			res.status(400).json({ error: "Password fields must all be provided or none be provided" });
+			return;
+		}
+	}
+
+	try {
+		await updateVaultItem(res.locals.item.id, encryptedInfo, iv, authTag, twoFactorEnabled, vaultId, password);
+		res.status(200).json({ success: true });
+	} catch (e) {
+		res.status(500).json({ error: "Failed to update vault item" });
+	}
+});
+
+router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.item) {
+		res.status(500).json({ error: "Something went wrong" });
 		return;
 	}
 
@@ -95,7 +171,7 @@ router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), re
 	const isValid = authenticator.verify({ secret, token });
 
 	if (!isValid) {
-		res.status(403).json({ error: "Invalid token. 2FA was not enabled" });
+		res.status(403).json({ error: "Invalid token." });
 		return;
 	}
 

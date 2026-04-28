@@ -18,7 +18,6 @@ export interface VaultItem {
 	website: string;
 	username: string;
 	twoFactorEnabled: boolean;
-	twoFactorSource: number; // 0: self, 1: folder
 	password: ItemPassword | null; // password stays encrypted until explicitly requested
 }
 

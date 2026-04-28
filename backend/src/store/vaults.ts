@@ -77,7 +77,6 @@ export async function getUserVaults(userId: number) {
 					iv: item.iv,
 					authTag: item.authTag,
 					twoFactorEnabled: v.twoFactorEnabled || item.twoFactorEnabled,
-					twoFactorSource: v.twoFactorEnabled ? 1 : 0,
 					password: pw ? { encryptedPassword: pw.encryptedPassword, iv: pw.iv, authTag: pw.authTag } : null,
 				};
 			}),
@@ -115,6 +114,39 @@ export async function insertVaultItem(vaultId: number, encryptedInfo: string, iv
 		}
 	} catch (e) {
 		console.error(`Insert vault item request for vault with id ${vaultId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function updateVaultItem(itemId: bigint, encryptedInfo: string, iv: string, authTag: string, twoFactorEnabled: boolean, vaultId?: number, password?: ItemPassword | null) {
+	try {
+		await sql`
+            UPDATE vault_items
+            SET
+                encrypted_info = ${encryptedInfo},
+                iv = ${iv},
+                auth_tag = ${authTag},
+                two_factor_enabled = ${twoFactorEnabled}
+                ${vaultId !== undefined ? sql`, vault_id = ${vaultId}` : sql``}
+            WHERE id = ${itemId.toString()}
+        `;
+
+		if (password !== undefined) {
+			if (password) {
+				await sql`
+                    INSERT INTO item_passwords (vault_item_id, encrypted_password, iv, auth_tag)
+                    VALUES (${itemId.toString()}, ${password.encryptedPassword}, ${password.iv}, ${password.authTag})
+                    ON CONFLICT (vault_item_id) DO UPDATE
+                        SET encrypted_password = EXCLUDED.encrypted_password,
+                            iv = EXCLUDED.iv,
+                            auth_tag = EXCLUDED.auth_tag
+                `;
+			} else {
+				await sql`DELETE FROM item_passwords WHERE vault_item_id = ${itemId.toString()}`;
+			}
+		}
+	} catch (e) {
+		console.error(`Update vault item request for item id ${itemId} threw error: \n ${e}`);
 		throw new Error("Something went wrong");
 	}
 }
