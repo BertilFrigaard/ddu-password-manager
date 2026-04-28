@@ -36,7 +36,7 @@ export function Unlocked() {
 	}, [vaults]);
 
 	return (
-		<div className="flex flex-col h-full min-h-screen bg-gray-50">
+		<div className="flex flex-col h-screen bg-gray-50">
 			<div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
 				<div className="flex gap-15">
 					<h1 className="text-xl font-bold text-gray-800 tracking-tight">DDU Vault</h1>
@@ -67,12 +67,12 @@ export function Unlocked() {
 				/>
 			</div>
 
-			<div className="flex flex-1">
-				<aside className="flex flex-col gap-1 p-3 bg-white border-r border-gray-200 w-44 shrink-0">
+			<div className="flex flex-1 min-h-0">
+				<aside className="flex flex-col gap-1 p-3 bg-white border-r border-gray-200 w-44 shrink-0 min-h-0">
 					<div className="flex items-center space-x-5 px-3 py-2 border-b border-gray-800">
 						<h2 className="text-lg font-bold text-gray-700 tracking-wide">Folders</h2>
 					</div>
-					<div className="flex flex-col flex-1 gap-2 mt-4">
+					<div className="flex flex-col flex-1 gap-2 mt-4 overflow-y-auto min-h-0">
 						<button
 							onClick={() => {
 								setSelected(null);
@@ -93,18 +93,18 @@ export function Unlocked() {
 									{v.name}
 								</button>
 							))}
-						<button
-							onClick={() => {
-								setShowNewFolder(true);
-							}}
-							className="btn-primary"
-						>
-							New Folder
-						</button>
 					</div>
+					<button
+						onClick={() => {
+							setShowNewFolder(true);
+						}}
+						className="btn-primary mt-3"
+					>
+						New Folder
+					</button>
 				</aside>
 
-				<div className="flex-1">
+				<div className="flex-1 min-h-0">
 					<ViewCredentials selectVault={selected} />
 				</div>
 			</div>

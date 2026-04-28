@@ -82,7 +82,7 @@ export function ViewCredentials({ selectVault }: Props) {
 	}, [showingPassword]);
 
 	return (
-		<div className="px-10 py-5">
+		<div className="px-10 py-5 min-h-0 h-full flex flex-col">
 			{requestWith2FA && showingPassword && (
 				<Fetch2FA
 					onClose={() => {
@@ -130,7 +130,7 @@ export function ViewCredentials({ selectVault }: Props) {
 				</div>
 			</div>
 			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
-			<div className="flex flex-col gap-3 w-full">
+			<div className="flex flex-col gap-3 w-full min-h-0 overflow-y-scroll h-full">
 				{!credentials && <p>Loading...</p>}
 				{credentials &&
 					credentials
