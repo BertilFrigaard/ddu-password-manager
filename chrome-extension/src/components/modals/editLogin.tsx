@@ -11,6 +11,7 @@ import { Setup2FA } from "./setup2FA.js";
 import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
 import { Fetch2FA } from "./fetch2FA.js";
+import { CustomRequest2FA } from "./customRequest2FA.js";
 
 interface Props {
 	onClose: () => void;
@@ -33,7 +34,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	const [showGenerator, setShowGenerator] = useState(false);
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(vaultItem.twoFactorEnabled);
 	const [setup2FA, setSetup2FA] = useState(false);
-	const [requestWith2FA, setRequestWith2FA] = useState(false);
+	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "password" | "update">("none");
 
 	useEffect(() => {
 		const loadPassword = async (encryptedPassword: string, iv: string, authTag: string) => {
@@ -43,7 +44,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 			setOriginalPassword(p);
 		};
 		if (vaultItem.twoFactorEnabled) {
-			setRequestWith2FA(true);
+			setRequestWith2FA("password");
 		} else {
 			const pass = vaultItem.password;
 			if (!pass) {
@@ -53,10 +54,9 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 		}
 	}, [vaultItem]);
 
-	const onUpdate = async () => {
-		// UPDATE
+	const onUpdate = async (token?: string | undefined) => {
 		try {
-			await updateCredential(vaultItem.id, website, username, twoFactorEnabled, vaultId === sourceVault?.id ? undefined : vaultId, originalPassword === password ? undefined : password);
+			await updateCredential(vaultItem.id, website, username, twoFactorEnabled, vaultId === sourceVault?.id ? undefined : vaultId, originalPassword === password ? undefined : password, token);
 			await getVaults();
 			await refreshVaults();
 		} catch (e) {
@@ -65,16 +65,28 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 		onClose();
 	};
 
-	if (requestWith2FA) {
+	if (requestWith2FA === "password") {
 		return (
 			<Fetch2FA
 				onClose={onClose}
 				onSuccess={async (pass) => {
 					const decrypted = await decryptData(pass.encryptedPassword, pass.iv, pass.authTag);
 					setPassword(new TextDecoder().decode(decrypted));
-					setRequestWith2FA(false);
+					setRequestWith2FA("none");
 				}}
 				itemId={vaultItem.id}
+			/>
+		);
+	} else if (requestWith2FA === "update") {
+		return (
+			<CustomRequest2FA
+				onClose={() => {
+					setRequestWith2FA("none");
+				}}
+				onSubmit={async (token) => {
+					await onUpdate(token);
+				}}
+				description="This is a critical update. You will need to enter your 2FA token to confirm this."
 			/>
 		);
 	}
@@ -166,7 +178,16 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 							</div>
 						)}
 					</div>
-					<button onClick={onUpdate} className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
+					<button
+						onClick={() => {
+							if ((vaultItem.twoFactorEnabled && !twoFactorEnabled) || (sourceVault?.twoFactorEnabled && !vault?.twoFactorEnabled)) {
+								setRequestWith2FA("update");
+							} else {
+								onUpdate();
+							}
+						}}
+						className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+					>
 						Update
 					</button>
 				</div>

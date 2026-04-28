@@ -54,16 +54,17 @@ export async function getCredentialWithTwoFactorAuthentication(itemId: number, t
 	return resJson.password as ItemPassword;
 }
 
-export async function updateCredential(itemId: number, website: string, username: string, twoFactorEnabled: boolean, vaultId?: number, password?: string) {
+export async function updateCredential(itemId: number, website: string, username: string, twoFactorEnabled: boolean, vaultId?: number, password?: string, token?: string) {
 	const enc = new TextEncoder();
 
 	const encryptedInfo = await encryptData(enc.encode(JSON.stringify({ website, username })));
-	const body: { vaultId?: number; encryptedInfo: string; iv: string; authTag: string; twoFactorEnabled: boolean; authTagPassword?: string; encryptedPassword?: string; ivPassword?: string } = {
+	const body: { token?: string; vaultId?: number; encryptedInfo: string; iv: string; authTag: string; twoFactorEnabled: boolean; authTagPassword?: string; encryptedPassword?: string; ivPassword?: string } = {
 		vaultId,
 		encryptedInfo: encryptedInfo.encryptedData,
 		iv: encryptedInfo.iv,
 		authTag: encryptedInfo.authTag,
 		twoFactorEnabled,
+		token,
 	};
 
 	if (password) {
@@ -75,7 +76,7 @@ export async function updateCredential(itemId: number, website: string, username
 	const res = await authenticatedFetch("/vaultItem/" + itemId, "POST", body);
 
 	if (!res.ok) {
-		logRequestError("getCredentialWithTwoFactorAuthentication", res);
-		throw Error("Failed get password with 2FA");
+		logRequestError("updateCredential", res);
+		throw Error("Failed to update password");
 	}
 }

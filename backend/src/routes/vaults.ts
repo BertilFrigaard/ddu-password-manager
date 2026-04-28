@@ -66,28 +66,28 @@ router.post("/vaultItem/:itemId", requireAuth({ attachUser: true }), requireItem
 		return;
 	}
 
-	const { vaultId, encryptedInfo, iv, authTag, twoFactorEnabled, ivPassword, encryptedPassword, authTagPassword } = req.body;
-
+	const { vaultId, encryptedInfo, iv, authTag, twoFactorEnabled, ivPassword, encryptedPassword, authTagPassword, token } = req.body;
 	if (!encryptedInfo || !iv || !authTag || typeof twoFactorEnabled !== "boolean") {
 		res.status(400).json({ error: "Missing required fields: encryptedInfo, iv, authTag, twoFactorEnabled" });
 		return;
 	}
 
-	let password: ItemPassword | null | undefined = undefined;
-	if (ivPassword !== undefined || encryptedPassword !== undefined || authTagPassword !== undefined) {
-		if (ivPassword && encryptedPassword && authTagPassword) {
-			password = { iv: ivPassword, encryptedPassword, authTag: authTagPassword };
-		} else if (!ivPassword && !encryptedPassword && !authTagPassword) {
-			password = null;
-		} else {
-			res.status(400).json({ error: "Password fields must all be provided or none be provided" });
-			return;
+	let sourceVault;
+	try {
+		sourceVault = await getDBVaultById(res.locals.item.vaultId);
+		if (!sourceVault) {
+			throw Error("sourceVault = null");
 		}
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Failed to find original folder of item" });
+		return;
 	}
 
+	let vault;
 	if (typeof vaultId === "number") {
 		try {
-			const vault = await getDBVaultById(vaultId);
+			vault = await getDBVaultById(vaultId);
 			if (!vault) {
 				res.status(404).json({ error: "Selected folder not found" });
 				return;
@@ -104,6 +104,33 @@ router.post("/vaultItem/:itemId", requireAuth({ attachUser: true }), requireItem
 	} else if (typeof vaultId !== "undefined") {
 		res.status(400).json({ error: "vaultId must either be undefined or a number" });
 		return;
+	}
+
+	if ((res.locals.item.twoFactorEnabled && twoFactorEnabled === false) || (sourceVault.twoFactorEnabled && vault && !vault.twoFactorEnabled)) {
+		if (!token) {
+			res.status(400).json({ error: "Token missing from request. 2FA required for the requested update" });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token." });
+			return;
+		}
+	}
+
+	let password: ItemPassword | null | undefined = undefined;
+	if (ivPassword !== undefined || encryptedPassword !== undefined || authTagPassword !== undefined) {
+		if (ivPassword && encryptedPassword && authTagPassword) {
+			password = { iv: ivPassword, encryptedPassword, authTag: authTagPassword };
+		} else if (!ivPassword && !encryptedPassword && !authTagPassword) {
+			password = null;
+		} else {
+			res.status(400).json({ error: "Password fields must all be provided or none be provided" });
+			return;
+		}
 	}
 
 	try {
