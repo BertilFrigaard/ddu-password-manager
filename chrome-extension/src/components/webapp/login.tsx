@@ -16,7 +16,7 @@ export function Login() {
 
 	const onSignup = async () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=signup") });
-		document.close();
+		window.close();
 	};
 
 	return (

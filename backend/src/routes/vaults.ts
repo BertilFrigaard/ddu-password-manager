@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVault, updateVaultItem } from "../store/vaults";
+import { deleteVault, deleteVaultItem, getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVault, updateVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
 import { requireItem, requireVault } from "../middleware/vault";
@@ -218,6 +218,82 @@ router.post("/vaultItem/:itemId/password", requireAuth({ attachUser: true }), re
 	}
 
 	res.json({ password });
+});
+
+router.delete("/vaults/:vaultId", requireAuth({ attachUser: true }), requireVault({ checkOwnership: true, attachVault: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.vault) {
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	if (res.locals.vault.twoFactorEnabled) {
+		const { token } = req.body;
+		if (!token) {
+			res.status(400).json({ error: "Token missing from request " });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token." });
+			return;
+		}
+	}
+
+	try {
+		await deleteVault(res.locals.vault.id);
+		res.sendStatus(200);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Internal server error when deleting vault" });
+		return;
+	}
+});
+
+router.delete("/vaultItem/:itemId", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.item) {
+		res.status(500).json({ error: "Something went wrong" });
+		return;
+	}
+
+	let sourceVault;
+	try {
+		sourceVault = await getDBVaultById(res.locals.item.vaultId);
+		if (!sourceVault) {
+			throw Error("sourceVault = null");
+		}
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Failed to find original folder of item" });
+		return;
+	}
+
+	if (res.locals.item.twoFactorEnabled || sourceVault.twoFactorEnabled) {
+		const { token } = req.body;
+		if (!token) {
+			res.status(400).json({ error: "Token missing from request " });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token." });
+			return;
+		}
+	}
+
+	try {
+		await deleteVaultItem(res.locals.item.id);
+		res.sendStatus(200);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Internal server error when deleting login" });
+		return;
+	}
 });
 
 export default router;

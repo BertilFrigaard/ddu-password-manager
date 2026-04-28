@@ -13,6 +13,15 @@ export async function createVault(vaultName: string, twoFactorEnabled: boolean) 
 	}
 }
 
+export async function deleteVault(vaultId: number, token?: string) {
+	const res = await authenticatedFetch(`/vaults/${vaultId}`, "DELETE", { token });
+
+	if (!res.ok) {
+		logRequestError("deleteVault", res);
+		throw Error("Failed to delete vault");
+	}
+}
+
 export async function updateVault(vaultId: number, vaultName: string, twoFactorEnabled?: boolean, token?: string) {
 	const res = await authenticatedFetch(`/vaults/${vaultId}`, "POST", { name: vaultName, twoFactorEnabled, token: token });
 

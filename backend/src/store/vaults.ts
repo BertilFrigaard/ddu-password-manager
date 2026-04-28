@@ -185,3 +185,21 @@ export async function getDBVaultItemPasswordByItemId(id: bigint): Promise<DBItem
 		throw new Error("Something went wrong");
 	}
 }
+
+export async function deleteVaultItem(id: bigint) {
+	try {
+		await sql`DELETE FROM vault_items WHERE id = ${id.toString()}`;
+	} catch (e) {
+		console.error(`Delete vault item request for id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
+export async function deleteVault(id: number) {
+	try {
+		await sql`DELETE FROM vaults WHERE id = ${id.toString()}`;
+	} catch (e) {
+		console.error(`Delete vault request for id ${id} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}

@@ -16,12 +16,12 @@ export function PopupLocked() {
 
 	const onSignup = async () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=signup") });
-		document.close();
+		window.close();
 	};
 
 	const onWebapp = async () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html") });
-		document.close();
+		window.close();
 	};
 
 	return (

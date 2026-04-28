@@ -18,7 +18,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 		setIsLoading(true);
 		setVaults(await getVaults());
 		setIsLoading(false);
-		console.log(vaults);
 	};
 
 	useEffect(() => {

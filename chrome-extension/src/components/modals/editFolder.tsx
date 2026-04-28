@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { FormInput } from "../userinput/formInput.js";
 import Modal from "./modal.js";
-import { createVault, getVaults, updateVault } from "../../services/vaultService.js";
+import { createVault, deleteVault, getVaults, updateVault } from "../../services/vaultService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { Setup2FA } from "./2fa/setup2FA.js";
 import { Vault } from "../../common/types.js";
 import { CustomRequest2FA } from "./2fa/customRequest2FA.js";
+import { deleteCredential } from "../../services/credentialService.js";
+import { ConfirmationModal } from "./confirmationModal.js";
 
 interface Props {
 	onClose: () => void;
@@ -18,8 +20,8 @@ export function EditFolder({ onClose, vault }: Props) {
 	const { user } = useUser();
 	const [newFolderName, setNewFolderName] = useState<string>(vault.name);
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(vault.twoFactorEnabled);
-	const [setup2FA, setSetup2FA] = useState(false);
-	const [requestWith2FA, setRequestWith2FA] = useState(false);
+	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "setup" | "edit" | "delete">("none");
+	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	const onEdit = async (token?: string) => {
 		await updateVault(vault.id, newFolderName, twoFactorEnabled, token);
@@ -28,23 +30,61 @@ export function EditFolder({ onClose, vault }: Props) {
 		onClose();
 	};
 
-	if (setup2FA) {
+	const onDelete = async (token?: string) => {
+		await deleteVault(vault.id, token);
+		await getVaults();
+		await refreshVaults();
+		onClose();
+	};
+
+	if (requestWith2FA == "setup") {
 		return (
 			<Setup2FA
 				onClose={() => {
-					setSetup2FA(false);
+					setRequestWith2FA("none");
 				}}
 			/>
 		);
 	}
-	if (requestWith2FA) {
+	if (requestWith2FA == "edit") {
 		return (
 			<CustomRequest2FA
 				onClose={() => {
-					setRequestWith2FA(false);
+					setRequestWith2FA("none");
 				}}
 				onSubmit={onEdit}
 				description="WARNING: By turning off 2FA for this folder, all the items in the folder might lose 2FA protection. "
+			/>
+		);
+	}
+	if (requestWith2FA == "delete") {
+		return (
+			<CustomRequest2FA
+				onClose={() => {
+					setRequestWith2FA("none");
+				}}
+				onSubmit={onDelete}
+				description="WARNING: By deleting this folder you are deleting all the items within it"
+			/>
+		);
+	}
+	if (confirmDelete) {
+		return (
+			<ConfirmationModal
+				onClose={() => {
+					setRequestWith2FA("none");
+					setConfirmDelete(false);
+				}}
+				onSubmit={async () => {
+					if (vault.twoFactorEnabled) {
+						setRequestWith2FA("delete");
+						setConfirmDelete(false);
+					} else {
+						await onDelete();
+					}
+				}}
+				title="Delete Folder"
+				text="WARNING: All items in this folder will be deleted"
 			/>
 		);
 	}
@@ -72,7 +112,7 @@ export function EditFolder({ onClose, vault }: Props) {
 							<button
 								type="button"
 								onClick={() => {
-									setSetup2FA(true);
+									setRequestWith2FA("setup");
 								}}
 								className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
 							>
@@ -85,7 +125,7 @@ export function EditFolder({ onClose, vault }: Props) {
 					onClick={async () => {
 						if (newFolderName !== vault.name || twoFactorEnabled !== vault.twoFactorEnabled) {
 							if (!twoFactorEnabled && vault.twoFactorEnabled) {
-								setRequestWith2FA(true);
+								setRequestWith2FA("edit");
 							} else {
 								onEdit();
 							}
@@ -96,6 +136,14 @@ export function EditFolder({ onClose, vault }: Props) {
 					className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
 				>
 					Update
+				</button>
+				<button
+					onClick={async () => {
+						setConfirmDelete(true);
+					}}
+					className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+				>
+					Delete
 				</button>
 			</div>
 		</Modal>

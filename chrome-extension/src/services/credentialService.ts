@@ -80,3 +80,12 @@ export async function updateCredential(itemId: number, website: string, username
 		throw Error("Failed to update password");
 	}
 }
+
+export async function deleteCredential(itemId: number, token?: string) {
+	const res = await authenticatedFetch(`/vaultItem/${itemId}`, "DELETE", { token });
+
+	if (!res.ok) {
+		logRequestError("deleteCredential", res);
+		throw Error("Failed to delete Credential");
+	}
+}
