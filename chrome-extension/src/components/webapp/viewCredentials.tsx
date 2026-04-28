@@ -12,6 +12,7 @@ import { selectCredentials } from "../../store/selectors.js";
 import { Fetch2FA } from "../modals/2fa/fetch2FA.js";
 import { EditLogin } from "../modals/editLogin.js";
 import { EditFolder } from "../modals/editFolder.js";
+import { GoDotFill } from "react-icons/go";
 
 interface Props {
 	selectVault: Vault | null;
@@ -120,7 +121,10 @@ export function ViewCredentials({ selectVault }: Props) {
 						.map((item) => (
 							<div key={item.id} className="flex w-full justify-between border border-gray-300 rounded-md px-5 py-1">
 								<div className="flex flex-col gap-1 py-2">
-									<p className="text-lg text-gray-800 font-bold">{item.website}</p>
+									<div className="flex gap-1">
+										<p className="text-lg text-gray-800 font-bold">{item.website}</p>
+										{Date.now() - item.lastPasswordUpdate > 365 * 24 * 60 * 60 * 1000 && <GoDotFill size={20} className="hover:scale-130 text-red-500 text-center m-auto" title="Time to change this password" />}
+									</div>
 									<p className="text-base text-gray-600">{item.username}</p>
 								</div>
 								<div className="flex gap-3 items-center">

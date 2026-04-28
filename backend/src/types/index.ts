@@ -45,6 +45,7 @@ export interface DBVaultItem {
 	iv: string;
 	authTag: string;
 	twoFactorEnabled: boolean;
+	lastPasswordUpdate: bigint;
 }
 
 export interface DBItemPassword {
@@ -67,6 +68,7 @@ export interface VaultItem {
 	iv: string;
 	authTag: string;
 	twoFactorEnabled: boolean;
+	lastPasswordUpdate: bigint;
 	password: ItemPassword | null;
 }
 

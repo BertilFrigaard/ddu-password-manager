@@ -18,6 +18,7 @@ export interface VaultItem {
 	website: string;
 	username: string;
 	twoFactorEnabled: boolean;
+	lastPasswordUpdate: number;
 	password: ItemPassword | null; // password stays encrypted until explicitly requested
 }
 

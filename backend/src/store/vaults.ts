@@ -92,6 +92,7 @@ export async function getUserVaults(userId: number) {
 					iv: item.iv,
 					authTag: item.authTag,
 					twoFactorEnabled: v.twoFactorEnabled || item.twoFactorEnabled,
+					lastPasswordUpdate: item.lastPasswordUpdate,
 					password: pw ? { encryptedPassword: pw.encryptedPassword, iv: pw.iv, authTag: pw.authTag } : null,
 				};
 			}),
@@ -143,6 +144,7 @@ export async function updateVaultItem(itemId: bigint, encryptedInfo: string, iv:
                 auth_tag = ${authTag},
                 two_factor_enabled = ${twoFactorEnabled}
                 ${vaultId !== undefined ? sql`, vault_id = ${vaultId}` : sql``}
+                ${password !== undefined ? sql`, last_password_update = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT` : sql``}
             WHERE id = ${itemId.toString()}
         `;
 

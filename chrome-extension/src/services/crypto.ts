@@ -52,6 +52,7 @@ export async function decryptVaults(vaults: any): Promise<Vault[]> {
 						website: info.website,
 						username: info.username,
 						twoFactorEnabled: item.twoFactorEnabled,
+						lastPasswordUpdate: item.lastPasswordUpdate,
 						password: item.password ?? null,
 					};
 				}),
