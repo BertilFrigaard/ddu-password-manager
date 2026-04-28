@@ -3,7 +3,7 @@ import Modal from "./modal.js";
 import { FormInput } from "../userinput/formInput.js";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { PasswordGenerator } from "../userinput/passwordGenerator.js";
-import { updateCredential } from "../../services/credentialService.js";
+import { deleteCredential, updateCredential } from "../../services/credentialService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { getVaults } from "../../services/vaultService.js";
@@ -12,6 +12,7 @@ import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
 import { Fetch2FA } from "./2fa/fetch2FA.js";
 import { CustomRequest2FA } from "./2fa/customRequest2FA.js";
+import { ConfirmationModal } from "./confirmationModal.js";
 
 interface Props {
 	onClose: () => void;
@@ -34,7 +35,8 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	const [showGenerator, setShowGenerator] = useState(false);
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(vaultItem.twoFactorEnabled);
 	const [setup2FA, setSetup2FA] = useState(false);
-	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "password" | "update">("none");
+	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "password" | "update" | "delete">("none");
+	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	useEffect(() => {
 		const loadPassword = async (encryptedPassword: string, iv: string, authTag: string) => {
@@ -65,6 +67,13 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 		onClose();
 	};
 
+	const onDelete = async (token?: string) => {
+		await deleteCredential(vaultItem.id, token);
+		await getVaults();
+		await refreshVaults();
+		onClose();
+	};
+
 	if (requestWith2FA === "password") {
 		return (
 			<Fetch2FA
@@ -87,6 +96,37 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 					await onUpdate(token);
 				}}
 				description="This is a critical update. You will need to enter your 2FA token to confirm this."
+			/>
+		);
+	} else if (requestWith2FA == "delete") {
+		return (
+			<CustomRequest2FA
+				onClose={() => {
+					setRequestWith2FA("none");
+				}}
+				onSubmit={onDelete}
+				description="WARNING: If you delete this login you can never restore it"
+			/>
+		);
+	}
+
+	if (confirmDelete) {
+		return (
+			<ConfirmationModal
+				onClose={() => {
+					setRequestWith2FA("none");
+					setConfirmDelete(false);
+				}}
+				onSubmit={async () => {
+					if (vaultItem.twoFactorEnabled || sourceVault?.twoFactorEnabled) {
+						setRequestWith2FA("delete");
+						setConfirmDelete(false);
+					} else {
+						await onDelete();
+					}
+				}}
+				title="Delete Login"
+				text="WARNING: The login can never be restored"
 			/>
 		);
 	}
@@ -189,6 +229,14 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 						className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
 					>
 						Update
+					</button>
+					<button
+						onClick={() => {
+							setConfirmDelete(true);
+						}}
+						className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+					>
+						Delete
 					</button>
 				</div>
 			</Modal>

@@ -27,7 +27,7 @@ router.post("/signup", async (req, res) => {
 
 	if (user) {
 		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
-		console.log(`User with email '${email}' already exists`);
+		console.error(`User with email '${email}' already exists`);
 		res.status(400).json({ error: "User already exists" });
 		return;
 	}
@@ -72,7 +72,7 @@ router.post("/login", async (req, res) => {
 
 	if (!user) {
 		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
-		console.log(`User with email '${email}' dosen't exist`);
+		console.error(`User with email '${email}' dosen't exist`);
 		res.status(403).json({ error: "Unknown email" });
 		return;
 	}
@@ -80,7 +80,7 @@ router.post("/login", async (req, res) => {
 	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(user.authKeyHash, "hex"))) {
-		console.log(`Wrong masterPassword trying to log into user with email ${email}`);
+		console.error(`Wrong masterPassword trying to log into user with email ${email}`);
 		res.status(403).json({ error: "Wrong credentials" });
 		return;
 	}
@@ -260,7 +260,7 @@ router.delete("/user", requireAuth({ attachUser: true }), async (req, res) => {
 	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(res.locals.user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(res.locals.user.authKeyHash, "hex"))) {
-		console.log(`Wrong masterPassword trying to log into user with email ${res.locals.user.email}`);
+		console.error(`Wrong masterPassword trying to log into user with email ${res.locals.user.email}`);
 		res.status(403).json({ error: "Wrong credentials" });
 		return;
 	}
