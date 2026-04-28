@@ -126,13 +126,25 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 					}
 				}}
 				title="Delete Login"
-				text="WARNING: The login can never be restored"
-			/>
+			>
+				<div className="box-warning">
+					<p className="text-base font-bold">Warning</p>
+					<p className="text-sm">
+						You are about to <span className="font-semibold text-red-900">permanently delete</span> your login for <span className="italic">{vaultItem.website}</span>
+					</p>
+				</div>
+			</ConfirmationModal>
 		);
 	}
 
 	if (setup2FA) {
-		return <Setup2FA onClose={onClose} />;
+		return (
+			<Setup2FA
+				onClose={() => {
+					setSetup2FA(false);
+				}}
+			/>
+		);
 	} else {
 		return (
 			<Modal onClose={onClose} title="Edit Login">
@@ -188,7 +200,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 					<label className="text-xs font-medium text-gray-600">Two Factor Authentication</label>
 					{vault?.twoFactorEnabled ? (
 						<div className="flex items-center gap-2">
-							<span className="px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md">Two-Factor Authentication is enabled on folder</span>
+							<span className="box-success">Two Factor Authentication is enabled on folder</span>
 						</div>
 					) : user?.twoFactorEnabled ? (
 						<label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 border border-gray-200 rounded-md cursor-pointer select-none hover:bg-gray-50 transition-colors">
@@ -209,7 +221,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 								onClick={() => {
 									setSetup2FA(true);
 								}}
-								className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+								className="btn-sm-light"
 							>
 								Enable Two-Factor-Authentication
 							</button>
@@ -224,7 +236,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 							onUpdate();
 						}
 					}}
-					className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+					className="btn-primary"
 				>
 					Update
 				</button>
@@ -232,7 +244,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 					onClick={() => {
 						setConfirmDelete(true);
 					}}
-					className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+					className="btn-danger"
 				>
 					Delete
 				</button>

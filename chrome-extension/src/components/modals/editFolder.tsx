@@ -84,13 +84,22 @@ export function EditFolder({ onClose, vault }: Props) {
 					}
 				}}
 				title="Delete Folder"
-				text="WARNING: All items in this folder will be deleted"
-			/>
+			>
+				<div className="box-warning">
+					<p className="text-base font-bold">Warning</p>
+					<p className="text-sm">
+						If you delete this folder, all the items within it will be <span className="font-semibold text-red-900">permanently deleted</span> from your account!
+					</p>
+				</div>
+			</ConfirmationModal>
 		);
 	}
 	return (
 		<Modal title="Edit Folder" onClose={onClose}>
-			<FormInput placeholder="Folder name" value={newFolderName} onChange={setNewFolderName} />
+			<div className="flex flex-col gap-1">
+				<label className="text-xs font-medium text-gray-600">Folder name</label>
+				<FormInput placeholder="Folder name" value={newFolderName} onChange={setNewFolderName} />
+			</div>
 			<div className="flex flex-col gap-1">
 				<label className="text-xs font-medium text-gray-600">Two Factor Authentication</label>
 				{user?.twoFactorEnabled ? (
@@ -112,7 +121,7 @@ export function EditFolder({ onClose, vault }: Props) {
 							onClick={() => {
 								setRequestWith2FA("setup");
 							}}
-							className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+							className="btn-sm-light"
 						>
 							Enable Two-Factor-Authentication
 						</button>
@@ -131,7 +140,7 @@ export function EditFolder({ onClose, vault }: Props) {
 						onClose();
 					}
 				}}
-				className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+				className="btn-primary"
 			>
 				Update
 			</button>
@@ -139,7 +148,7 @@ export function EditFolder({ onClose, vault }: Props) {
 				onClick={async () => {
 					setConfirmDelete(true);
 				}}
-				className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+				className="btn-danger"
 			>
 				Delete
 			</button>

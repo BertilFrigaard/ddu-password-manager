@@ -21,13 +21,29 @@
 }
 
 @utility btn-secondary {
-	@apply btn text-gray-600 border border-gray-200 hover:bg-gray-50;
+	@apply btn text-gray-600 border border-gray-400 hover:bg-gray-50;
 }
 
 @utility btn-danger {
-	@apply btn px-3 py-2 text-xs font-medium text-gray-600 border border-error-dark bg-error hover:bg-gray-100 shrink-0 whitespace-nowrap;
+	@apply btn text-gray-800 border border-red-500 bg-red-100 hover:bg-red-200;
 }
 
 @utility btn-sm-ghost {
 	@apply btn px-3 py-1.5 text-xs text-gray-400 rounded-lg hover:cursor-pointer hover:text-gray-900;
+}
+
+@utility btn-sm-light {
+	@apply btn px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer;
+}
+
+@utility box {
+	@apply py-2 px-3 text-xs font-medium rounded-md;
+}
+
+@utility box-warning {
+	@apply box text-gray-800 border border-red-500 bg-red-100;
+}
+
+@utility box-success {
+	@apply box text-green-800 border border-green-200 bg-green-50;
 }

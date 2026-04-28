@@ -28,7 +28,10 @@ export function CreateFolder({ onClose }: Props) {
 	}
 	return (
 		<Modal title="New Folder" onClose={onClose}>
-			<FormInput placeholder="Folder name" value={newFolderName} onChange={setNewFolderName} />
+			<div className="flex flex-col gap-1">
+				<label className="text-xs font-medium text-gray-600">Folder name</label>
+				<FormInput placeholder="Folder name" value={newFolderName} onChange={setNewFolderName} />
+			</div>
 			<div className="flex flex-col gap-1">
 				<label className="text-xs font-medium text-gray-600">Two Factor Authentication</label>
 				{user?.twoFactorEnabled ? (
@@ -50,7 +53,7 @@ export function CreateFolder({ onClose }: Props) {
 							onClick={() => {
 								setSetup2FA(true);
 							}}
-							className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+							className="btn-sm-light"
 						>
 							Enable Two-Factor-Authentication
 						</button>

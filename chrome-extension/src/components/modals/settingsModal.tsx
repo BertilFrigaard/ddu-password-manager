@@ -42,27 +42,37 @@ export function SettingsModal({ onClose }: Props) {
 					setDeleteAccountModal(false);
 				}}
 			>
-				<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-120 shadow-lg">
-					<h2 className="text-lg font-semibold text-gray-800">Confirm Delete Account</h2>
-					<p>This will delete your account forever. If you confirm this, it cannot be undone.</p>
-					<p>To confirm enter your master password below</p>
-					<FormInput placeholder="Master Password" value={deleteMasterPassword} type="password" onChange={setDeleteMasterPassword} />
-					{user?.twoFactorEnabled && (
-						<div>
-							<p>You have Two Factor Authentication activated, and thus you will have to authenticate inorder to delete your account. Please enter your 2FA token below</p>
-							<FormInput placeholder="2FA Token" value={deleteToken} type="password" onChange={setDeleteToken} />
-						</div>
-					)}
-					<button onClick={confirmDelete} className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
-						Delete
-					</button>
+				<div className="box-warning">
+					<p className="text-base font-bold">Warning</p>
+					<p className="text-sm">
+						You are about to <span className="font-semibold text-red-900">permanently delete</span> your account. You will lose all your logins, and it cannot be undone! If you wish to proceed, enter the following information.
+					</p>
 				</div>
+				<div className="flex flex-col gap-1">
+					<label className="text-xs font-medium text-gray-600">Master Password</label>
+					<FormInput placeholder="Master Password" value={deleteMasterPassword} type="password" onChange={setDeleteMasterPassword} />
+				</div>
+				{user?.twoFactorEnabled && (
+					<div className="flex flex-col gap-1">
+						<label className="text-xs font-medium text-gray-600">2FA Token</label>
+						<FormInput placeholder="2FA Token" value={deleteToken} type="password" onChange={setDeleteToken} />
+					</div>
+				)}
+				<button onClick={confirmDelete} className="btn-danger w-full">
+					Delete
+				</button>
 			</Modal>
 		);
 	}
 
 	if (setup2FA) {
-		return <Setup2FA onClose={onClose} />;
+		return (
+			<Setup2FA
+				onClose={() => {
+					setSetup2FA(false);
+				}}
+			/>
+		);
 	}
 
 	return (
@@ -71,7 +81,7 @@ export function SettingsModal({ onClose }: Props) {
 				<label className="text-xs font-medium text-gray-600">Two Factor Authentication</label>
 				{user?.twoFactorEnabled ? (
 					<div className="flex items-center gap-2">
-						<span className="px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md">Two-Factor Authentication is enabled</span>
+						<span className="box-success">Two-Factor Authentication is enabled</span>
 					</div>
 				) : (
 					<div className="flex gap-2 items-center">
@@ -80,7 +90,7 @@ export function SettingsModal({ onClose }: Props) {
 							onClick={() => {
 								setSetup2FA(true);
 							}}
-							className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+							className="btn-sm-light"
 						>
 							Enable Two-Factor-Authentication
 						</button>
@@ -95,7 +105,7 @@ export function SettingsModal({ onClose }: Props) {
 						onClick={() => {
 							setDeleteAccountModal(true);
 						}}
-						className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-error-dark bg-error rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+						className="btn-danger w-full"
 					>
 						Delete Account
 					</button>

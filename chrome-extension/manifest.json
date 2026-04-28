@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "Password Manager REACT test",
+	"name": "DDU Password Manager",
 	"version": "1.0.0",
-	"description": "A simple Hello World Chrome extension",
+	"description": "The password manager for our DDU exam",
 	"permissions": ["tabs", "storage", "scripting"],
 	"action": {
 		"default_popup": "public/popup.html",

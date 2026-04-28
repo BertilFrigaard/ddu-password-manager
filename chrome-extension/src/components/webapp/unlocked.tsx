@@ -11,7 +11,7 @@ import { useUser } from "../../context/UserContext.js";
 import { IoIosHelpCircleOutline } from "react-icons/io";
 import { MdOutlineVpnKey } from "react-icons/md";
 import { SettingsModal } from "../modals/settingsModal.js";
-import { HelpModal } from "../modals/helpModal.js";
+import { TipsModal } from "../modals/tipsModal.js";
 import { CreateFolder } from "../modals/createFolder.js";
 import { IconGhostButton } from "../userinput/buttons/iconGhostButton.js";
 
@@ -21,7 +21,7 @@ export function Unlocked() {
 	const [selected, setSelected] = useState<Vault | null>(null);
 	const [showNewFolder, setShowNewFolder] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
-	const [showHelp, setShowHelp] = useState(false);
+	const [showTips, setShowTips] = useState(false);
 
 	useEffect(() => {
 		const pageRefresh = async () => {
@@ -49,9 +49,9 @@ export function Unlocked() {
 							icon={FiSettings}
 						/>
 						<IconGhostButton
-							label="Help"
+							label="Tips"
 							onClick={async () => {
-								setShowHelp(true);
+								setShowTips(true);
 							}}
 							icon={IoIosHelpCircleOutline}
 						/>
@@ -117,10 +117,10 @@ export function Unlocked() {
 				/>
 			)}
 
-			{showHelp && (
-				<HelpModal
+			{showTips && (
+				<TipsModal
 					onClose={() => {
-						setShowHelp(false);
+						setShowTips(false);
 					}}
 				/>
 			)}

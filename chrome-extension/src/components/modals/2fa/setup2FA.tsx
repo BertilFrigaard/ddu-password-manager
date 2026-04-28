@@ -51,7 +51,23 @@ export function Setup2FA({ onClose }: Props) {
 	} else {
 		return (
 			<Modal title="Setup Two Factor Authentication" onClose={onClose} closeOnOutsideClick={false}>
-				<p>A little about 2FA</p>
+				<ol className="list-disc list-outside pl-5 space-y-2">
+					<li>
+						Download an Authenticator app on your phone. We recommend <span className="italic">Google Authenticator</span> which you can get for{" "}
+						<a className="underline cursor-pointer" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">
+							Android
+						</a>{" "}
+						and{" "}
+						<a className="underline cursor-pointer" href="https://apps.apple.com/us/app/google-authenticator/id388497605">
+							IOS
+						</a>
+					</li>
+					<li>Scan the QR-Code below with your Authenticator app</li>
+					<li>Enter the token from your Authenticator app below</li>
+					<li>
+						Press the <span className="italic">Enable Two Factor Authentication</span> button
+					</li>
+				</ol>
 				<div className="flex flex-col gap-1">{isLoading ? <p>Loading...</p> : qrCode && <img src={qrCode} />}</div>
 				<div className="flex flex-col gap-1">
 					<div className="mb-3">
@@ -65,16 +81,7 @@ export function Setup2FA({ onClose }: Props) {
 						}}
 						className="btn-primary"
 					>
-						Enable Two-Factor-Authentication
-					</button>
-					<button
-						type="button"
-						onClick={() => {
-							onClose();
-						}}
-						className="btn-secondary"
-					>
-						Cancel
+						Enable Two Factor Authentication
 					</button>
 				</div>
 			</Modal>
