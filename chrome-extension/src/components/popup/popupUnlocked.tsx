@@ -13,6 +13,7 @@ import { FaFill } from "react-icons/fa";
 import { CustomRequest2FA } from "../modals/2fa/customRequest2FA.js";
 import { Fetch2FA } from "../modals/2fa/fetch2FA.js";
 import { FaPlus } from "react-icons/fa6";
+import { IconGhostButton } from "../userinput/buttons/iconGhostButton.js";
 
 export function PopupUnlocked() {
 	const { refreshUser } = useUser();
@@ -92,22 +93,21 @@ export function PopupUnlocked() {
 			)}
 			<div className="flex items-center justify-between w-full mb-3">
 				<h1 className="text-2xl font-bold text-gray-800">Vault</h1>
-				<button
-					className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+				<IconGhostButton
+					label="Logout"
 					onClick={async () => {
 						await logout();
 						refreshUser();
 					}}
-				>
-					<FiLogOut size={14} />
-					Logout
-				</button>
+					icon={FiLogOut}
+				/>
 			</div>
 			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
-			<div className="flex flex-1 flex-col gap-3 w-full overflow-y-scroll mb-4">
-				{suggestions &&
-					!searchText &&
-					suggestions.map((item) => (
+			{suggestions &&
+				!searchText &&
+				suggestions.length > 0 &&
+				suggestions.map((item) => (
+					<div className="flex flex-1 flex-col gap-3 w-full overflow-y-scroll mb-4">
 						<div key={item.id} className="flex gap-3 w-full justify-between border border-gray-300 rounded-md px-3 py-1">
 							<div className="min-w-0 overflow-hidden">
 								<p className="text-sm text-gray-800 font-semibold truncate">{item.website}</p>
@@ -133,9 +133,9 @@ export function PopupUnlocked() {
 								</button>
 							</div>
 						</div>
-					))}
-			</div>
-			<div className="flex flex-1 flex-col gap-3 w-full overflow-y-scroll">
+					</div>
+				))}
+			<div className="flex flex-1 flex-col gap-3 w-full overflow-y-auto">
 				{!credentials && <p className="m-auto text-sm text-gray-400 italic text-center py-4">Loading...</p>}
 				{credentials && credentials.length <= 0 && <p className="m-auto text-sm text-gray-400 italic text-center py-4">No logins yet</p>}
 				{credentials &&
@@ -182,20 +182,21 @@ export function PopupUnlocked() {
 							</div>
 						))}
 			</div>
-			<div className="mt-5 flex justify-between w-full">
-				<button onClick={onWebapp} className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer flex items-center gap-1">
-					<FiExternalLink size={12} />
-					Open web app
-				</button>
-				<button
-					className="flex items-center gap-1 hover:cursor-pointer"
+			<div className="mt-2 flex justify-between w-full">
+				<IconGhostButton
+					label="Open App"
 					onClick={() => {
 						onNewCredential();
 					}}
-				>
-					<FaPlus size={14} />
-					New Login
-				</button>
+					icon={FiExternalLink}
+				/>
+				<IconGhostButton
+					label="New Login"
+					onClick={() => {
+						onNewCredential();
+					}}
+					icon={FaPlus}
+				/>
 			</div>
 		</div>
 	);

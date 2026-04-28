@@ -39,7 +39,7 @@ export function Fetch2FA({ onClose, onSuccess, itemId }: Props) {
 								onClick={() => {
 									submitToken();
 								}}
-								className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+								className="btn-primary"
 							>
 								Confirm
 							</button>

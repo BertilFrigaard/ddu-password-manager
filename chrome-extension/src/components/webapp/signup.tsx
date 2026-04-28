@@ -33,7 +33,7 @@ export function Signup() {
 			return false;
 		}
 
-		if (username !== username) {
+		if (username !== confirmUsername) {
 			setErrorMessage("Emails dosen't match");
 			return false;
 		}
@@ -51,25 +51,30 @@ export function Signup() {
 	};
 
 	return (
-		<div className="flex flex-col items-center justify-center w-72 min-h-48 px-6 py-8 border-gray-300 border rounded-md m-auto mt-[10%]">
+		<div className="flex flex-col items-center justify-center w-150 min-h-48 px-6 py-8 border-gray-300 border rounded-md m-auto mt-[10%]">
 			<h1 className="text-2xl font-bold text-gray-800 mb-6">Vault</h1>
 			<div className="flex flex-col gap-3 w-full">
 				<FormInput placeholder="Email" value={username} onChange={setUsername} />
 				<FormInput placeholder="Confirm Email" value={confirmUsername} onChange={setConfirmUsername} />
-				<div className="flex flex-col gap-1.5 bg-red-50 border border-red-300 rounded-md px-3 py-2.5">
-					<p className="text-xs font-bold text-red-700 uppercase tracking-wide flex gap-3">
+				<div className="flex flex-col gap-1.5 bg-orange-50 border border-orange-300 rounded-md px-3 py-2.5">
+					<p className="text-sm font-bold text-orange-700 uppercase tracking-wider flex gap-3 items-center">
 						<CiWarning size={16} /> Remember <CiWarning size={16} />
 					</p>
-					<p className="text-xs text-red-600 leading-snug">This password locks all your credentials. It must be very strong - consider a passphrase like:</p>
-					<p className="text-xs font-mono font-semibold text-red-700 bg-red-100 rounded px-2 py-1">dog-apple-doctor-mini-table-running</p>
+					<ul className="text-sm text-orange-600 list-disc list-inside space-y-0.5">
+						<li>You must be able to remember this password</li>
+						<li>Do not use personal information</li>
+						<li>Make it very strong, since it locks all your logins</li>
+					</ul>
+					<p className="text-xs text-orange-600 leading-snug">Consider using a password like the following:</p>
+					<p className="text-xs font-mono font-semibold text-orange-700 bg-orange-100 rounded px-2 py-2">dog-apple-doctor-mini-table-running</p>
 				</div>
 				<FormInput placeholder="Password" type="password" value={password} onChange={setPassword} />
 				<FormInput placeholder="Confirm Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
 				{errorMessage && <ErrorBox msg={errorMessage} />}
-				<button onClick={onSignup} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
+				<button onClick={onSignup} className="btn-primary">
 					Signup
 				</button>
-				<button onClick={onLogin} className="relative flex items-center justify-center w-full py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+				<button onClick={onLogin} className="relative btn-secondary flex justify-center">
 					Login
 					<BsBoxArrowUpRight size={14} className="absolute right-3" />
 				</button>

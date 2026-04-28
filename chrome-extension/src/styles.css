@@ -11,3 +11,23 @@
 :root {
 	--color-color-picker-text-do-not-use: #ff9898;
 }
+
+@utility btn {
+	@apply py-2 text-sm font-medium rounded-md transition-colors cursor-pointer;
+}
+
+@utility btn-primary {
+	@apply btn text-white bg-gray-800 hover:bg-gray-700;
+}
+
+@utility btn-secondary {
+	@apply btn text-gray-600 border border-gray-200 hover:bg-gray-50;
+}
+
+@utility btn-danger {
+	@apply btn px-3 py-2 text-xs font-medium text-gray-600 border border-error-dark bg-error hover:bg-gray-100 shrink-0 whitespace-nowrap;
+}
+
+@utility btn-sm-ghost {
+	@apply btn px-3 py-1.5 text-xs text-gray-400 rounded-lg hover:cursor-pointer hover:text-gray-900;
+}

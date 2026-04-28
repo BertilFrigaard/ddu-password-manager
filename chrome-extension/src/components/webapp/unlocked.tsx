@@ -13,6 +13,7 @@ import { MdOutlineVpnKey } from "react-icons/md";
 import { SettingsModal } from "../modals/settingsModal.js";
 import { HelpModal } from "../modals/helpModal.js";
 import { CreateFolder } from "../modals/createFolder.js";
+import { IconGhostButton } from "../userinput/buttons/iconGhostButton.js";
 
 export function Unlocked() {
 	const { refreshUser } = useUser();
@@ -37,37 +38,33 @@ export function Unlocked() {
 	return (
 		<div className="flex flex-col h-full min-h-screen bg-gray-50">
 			<div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
-				<div className="flex gap-20">
+				<div className="flex gap-15">
 					<h1 className="text-xl font-bold text-gray-800 tracking-tight">DDU Vault</h1>
-					<button
-						onClick={async () => {
-							setShowSettings(true);
-						}}
-						className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
-					>
-						<FiSettings size={15} />
-						Settings
-					</button>
-					<button
-						onClick={async () => {
-							setShowHelp(true);
-						}}
-						className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
-					>
-						<IoIosHelpCircleOutline size={15} />
-						Help
-					</button>
+					<div className="flex">
+						<IconGhostButton
+							label="Settings"
+							onClick={async () => {
+								setShowSettings(true);
+							}}
+							icon={FiSettings}
+						/>
+						<IconGhostButton
+							label="Help"
+							onClick={async () => {
+								setShowHelp(true);
+							}}
+							icon={IoIosHelpCircleOutline}
+						/>
+					</div>
 				</div>
-				<button
+				<IconGhostButton
+					label="Logout"
 					onClick={async () => {
 						await logout();
 						refreshUser();
 					}}
-					className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:cursor-pointer"
-				>
-					<FiLogOut size={15} />
-					Logout
-				</button>
+					icon={FiLogOut}
+				/>
 			</div>
 
 			<div className="flex flex-1">
@@ -100,7 +97,7 @@ export function Unlocked() {
 							onClick={() => {
 								setShowNewFolder(true);
 							}}
-							className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+							className="btn-primary"
 						>
 							New Folder
 						</button>

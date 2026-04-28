@@ -111,7 +111,7 @@ export function ViewCredentials({ selectVault }: Props) {
 						onClick={() => {
 							setWhileNewLogin(true);
 						}}
-						className="font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+						className="btn-primary flex justify-center items-center gap-1.5 h-10 px-3"
 					>
 						<FaPlus />
 						New Login
@@ -121,7 +121,7 @@ export function ViewCredentials({ selectVault }: Props) {
 							onClick={() => {
 								setWhileEditFolder(true);
 							}}
-							className="border border-gray-500 font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-gray-800 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+							className="btn flex justify-center items-center border-gray-500 border gap-1.5 h-10 px-3 hover:bg-gray-100"
 						>
 							<FiEdit2 />
 							Edit Folder

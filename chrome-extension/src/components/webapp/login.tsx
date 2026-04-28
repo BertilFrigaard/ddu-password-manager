@@ -25,10 +25,10 @@ export function Login() {
 			<div className="flex flex-col gap-3 w-full">
 				<FormInput placeholder="Email" value={username} onChange={setUsername} />
 				<FormInput placeholder="Password" type="password" value={password} onChange={setPassword} />
-				<button onClick={onLogin} className="w-full py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer">
+				<button onClick={onLogin} className="btn-primary">
 					Login
 				</button>
-				<button onClick={onSignup} className="relative flex items-center justify-center w-full py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+				<button onClick={onSignup} className="btn-secondary relative flex items-center justify-center">
 					Signup
 					<BsBoxArrowUpRight size={14} className="absolute right-3" />
 				</button>
