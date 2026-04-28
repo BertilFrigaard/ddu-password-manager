@@ -5,6 +5,7 @@ import { Login } from "../components/webapp/login.js";
 import { Unlocked } from "../components/webapp/unlocked.js";
 import { VaultProvider } from "../context/VaultContext.js";
 import { UserProvider, useUser } from "../context/UserContext.js";
+import { getVaults } from "../services/vaultService.js";
 
 function App() {
 	return (
@@ -16,9 +17,10 @@ function App() {
 
 function MainPage() {
 	const [view, setView] = useState<"login" | "signup">("login");
-	const { isLoading, isLoggedIn } = useUser();
+	const { isLoading, isLoggedIn, refreshUser } = useUser();
 
 	useEffect(() => {
+		refreshUser();
 		const params = new URLSearchParams(window.location.search);
 		const popup = params.get("openView");
 
