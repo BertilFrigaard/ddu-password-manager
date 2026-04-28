@@ -3,7 +3,7 @@ import Modal from "./modal.js";
 import { FormInput } from "../userinput/formInput.js";
 import { FaRegEye, FaRegEyeSlash, FaChevronDown } from "react-icons/fa";
 import { PasswordGenerator } from "../userinput/passwordGenerator.js";
-import { createCredential } from "../../services/credentialService.js";
+import { createCredential, updateCredential } from "../../services/credentialService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { getVaults } from "../../services/vaultService.js";
@@ -24,6 +24,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	const { user } = useUser();
 	const [website, setWebsite] = useState(vaultItem.website);
 	const [username, setUsername] = useState(vaultItem.username);
+	const [originalPassword, setOriginalPassword] = useState("");
 	const [password, setPassword] = useState("");
 	const [vaultId, setVaultId] = useState<number>(sourceVault?.id ?? user?.defaultVault ?? vaults?.[0]?.id ?? 0);
 	const vault = vaults?.find((v) => v.id == vaultId);
@@ -37,7 +38,9 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	useEffect(() => {
 		const loadPassword = async (encryptedPassword: string, iv: string, authTag: string) => {
 			const decrypted = await decryptData(encryptedPassword, iv, authTag);
-			setPassword(new TextDecoder().decode(decrypted));
+			const p = new TextDecoder().decode(decrypted);
+			setPassword(p);
+			setOriginalPassword(p);
 		};
 		if (vaultItem.twoFactorEnabled) {
 			setRequestWith2FA(true);
@@ -52,8 +55,13 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 
 	const onUpdate = async () => {
 		// UPDATE
-		await getVaults();
-		await refreshVaults();
+		try {
+			await updateCredential(vaultItem.id, website, username, twoFactorEnabled, vaultId === sourceVault?.id ? undefined : vaultId, originalPassword === password ? undefined : password);
+			await getVaults();
+			await refreshVaults();
+		} catch (e) {
+			console.error(e);
+		}
 		onClose();
 	};
 

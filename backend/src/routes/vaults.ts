@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem } from "../store/vaults";
+import { getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
 import { requireItem, requireVault } from "../middleware/vault";
@@ -30,7 +30,7 @@ router.post("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 		return;
 	}
 
-	if (!twoFactorEnabled || typeof twoFactorEnabled !== "boolean") {
+	if (typeof twoFactorEnabled !== "boolean") {
 		res.status(400).json({ error: "Invalid value for twoFactorEnabled" });
 		return;
 	}
@@ -57,6 +57,60 @@ router.get("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 		res.status(201).json({ vaults });
 	} catch (e) {
 		return res.status(500).json({ error: e });
+	}
+});
+
+router.post("/vaultItem/:itemId", requireAuth({ attachUser: true }), requireItem({ checkOwnership: true, attachItem: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.item) {
+		res.status(500).json({ error: "Internal error. Failed to fetch user or item" });
+		return;
+	}
+
+	const { vaultId, encryptedInfo, iv, authTag, twoFactorEnabled, ivPassword, encryptedPassword, authTagPassword } = req.body;
+
+	if (!encryptedInfo || !iv || !authTag || typeof twoFactorEnabled !== "boolean") {
+		res.status(400).json({ error: "Missing required fields: encryptedInfo, iv, authTag, twoFactorEnabled" });
+		return;
+	}
+
+	let password: ItemPassword | null | undefined = undefined;
+	if (ivPassword !== undefined || encryptedPassword !== undefined || authTagPassword !== undefined) {
+		if (ivPassword && encryptedPassword && authTagPassword) {
+			password = { iv: ivPassword, encryptedPassword, authTag: authTagPassword };
+		} else if (!ivPassword && !encryptedPassword && !authTagPassword) {
+			password = null;
+		} else {
+			res.status(400).json({ error: "Password fields must all be provided or none be provided" });
+			return;
+		}
+	}
+
+	if (typeof vaultId === "number") {
+		try {
+			const vault = await getDBVaultById(vaultId);
+			if (!vault) {
+				res.status(404).json({ error: "Selected folder not found" });
+				return;
+			}
+			if (vault.userId !== res.locals.user.id) {
+				res.status(403).json({ error: "No access" });
+				return;
+			}
+		} catch (e) {
+			console.error(e);
+			res.status(500).json({ error: "Internal server error" });
+			return;
+		}
+	} else if (typeof vaultId !== "undefined") {
+		res.status(400).json({ error: "vaultId must either be undefined or a number" });
+		return;
+	}
+
+	try {
+		await updateVaultItem(res.locals.item.id, encryptedInfo, iv, authTag, twoFactorEnabled, vaultId, password);
+		res.status(200).json({ success: true });
+	} catch (e) {
+		res.status(500).json({ error: "Failed to update vault item" });
 	}
 });
 
