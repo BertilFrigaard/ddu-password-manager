@@ -30,7 +30,7 @@ export function Setup2FA({ onClose }: Props) {
 	};
 
 	if (user?.twoFactorEnabled) {
-		<Modal onClose={onClose}>
+		<Modal title="Setup Two Factor Authentication" onClose={onClose}>
 			<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-150 shadow-lg">
 				<h2 className="text-xl font-semibold text-gray-800">Setup Two-Factor-Authentication</h2>
 				<p>A little about 2FA</p>
@@ -50,33 +50,32 @@ export function Setup2FA({ onClose }: Props) {
 		</Modal>;
 	} else {
 		return (
-			<Modal onClose={() => {}}>
-				<div className="flex flex-col gap-3 bg-white rounded-xl p-6 w-150 shadow-lg">
-					<h2 className="text-xl font-semibold text-gray-800">Setup Two-Factor-Authentication</h2>
-					<p>A little about 2FA</p>
-					<div className="flex flex-col gap-1">{isLoading ? <p>Loading...</p> : qrCode && <img src={qrCode} />}</div>
-					<div className="flex flex-col gap-1">
+			<Modal title="Setup Two Factor Authentication" onClose={() => {}}>
+				<p>A little about 2FA</p>
+				<div className="flex flex-col gap-1">{isLoading ? <p>Loading...</p> : qrCode && <img src={qrCode} />}</div>
+				<div className="flex flex-col gap-1">
+					<div className="mb-3">
 						<label className="text-xs font-medium text-gray-600">Two-Factor-Authentication Token</label>
 						<FormInput placeholder="Token" value={token} onChange={setToken} />
-						<button
-							type="button"
-							onClick={() => {
-								submitToken();
-							}}
-							className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
-						>
-							Enable Two-Factor-Authentication
-						</button>
-						<button
-							type="button"
-							onClick={() => {
-								onClose();
-							}}
-							className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
-						>
-							Cancel
-						</button>
 					</div>
+					<button
+						type="button"
+						onClick={() => {
+							submitToken();
+						}}
+						className="btn-primary"
+					>
+						Enable Two-Factor-Authentication
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							onClose();
+						}}
+						className="btn-secondary"
+					>
+						Cancel
+					</button>
 				</div>
 			</Modal>
 		);

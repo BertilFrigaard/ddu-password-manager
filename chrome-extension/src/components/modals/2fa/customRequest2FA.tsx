@@ -22,28 +22,25 @@ export function CustomRequest2FA({ onClose, onSubmit, description }: Props) {
 
 	if (user?.twoFactorEnabled) {
 		return (
-			<Modal onClose={onClose}>
-				<div className="flex flex-col gap-3 bg-white rounded-xl p-6 max-w-150 mx-3 shadow-lg">
-					<h2 className="text-xl font-semibold text-gray-800">Two-Factor-Authentication</h2>
-					<p>{description}</p>
-					{isLoading ? (
-						<p>Loading...</p>
-					) : (
-						<div className="flex flex-col gap-1">
-							<label className="text-xs font-medium text-gray-600">Two-Factor-Authentication Token</label>
-							<FormInput placeholder="Token" value={token} onChange={setToken} />
-							<button
-								type="button"
-								onClick={() => {
-									submitToken();
-								}}
-								className="shrink-0 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
-							>
-								Confirm
-							</button>
-						</div>
-					)}
-				</div>
+			<Modal title="Two Factor Authentication" onClose={onClose}>
+				<p>{description}</p>
+				{isLoading ? (
+					<p>Loading...</p>
+				) : (
+					<div className="flex flex-col gap-1">
+						<label className="text-xs font-medium text-gray-600">Two-Factor-Authentication Token</label>
+						<FormInput placeholder="Token" value={token} onChange={setToken} />
+						<button
+							type="button"
+							onClick={() => {
+								submitToken();
+							}}
+							className="btn-primary"
+						>
+							Confirm
+						</button>
+					</div>
+				)}
 			</Modal>
 		);
 	} else {

@@ -186,7 +186,7 @@ export function PopupUnlocked() {
 				<IconGhostButton
 					label="Open App"
 					onClick={() => {
-						onNewCredential();
+						onWebapp();
 					}}
 					icon={FiExternalLink}
 				/>
