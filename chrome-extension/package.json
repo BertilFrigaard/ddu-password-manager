@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"build": "esbuild src/app/popup.tsx src/app/mainpage.tsx --bundle --outdir=dist/app --format=esm && tailwindcss -i src/styles.css -o dist/styles.css",
+		"build": "esbuild src/app/content.ts src/app/background.ts src/app/popup.tsx src/app/mainpage.tsx --bundle --outdir=dist/app --format=esm && tailwindcss -i src/styles.css -o dist/styles.css",
 		"build:css": "tailwindcss -i src/styles.css -o dist/styles.css",
 		"watch:css": "tailwindcss -i src/styles.css -o dist/styles.css --watch"
 	},

@@ -24,7 +24,7 @@ export function Signup() {
 
 	const onLogin = async () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=login") });
-		document.close();
+		window.close();
 	};
 
 	const evalInputs = () => {
