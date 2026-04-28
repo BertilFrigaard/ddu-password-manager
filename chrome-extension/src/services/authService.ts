@@ -115,11 +115,24 @@ export async function isUnlocked(): Promise<boolean> {
 }
 
 export async function logout() {
+	if (await isUnlocked()) {
+		await clearRefreshKey();
+		try {
+			await authenticatedFetch("/logout", "POST");
+		} catch (e) {
+			console.error(e);
+		}
+	}
 	await clearAccessToken();
 	await clearSymmetricKey();
-	await clearRefreshKey();
 	await clearUser();
 	await clearVaults();
+}
+
+function decodeJwt(token: string): Record<string, unknown> {
+	const base64url = token.split(".")[1];
+	const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+	return JSON.parse(atob(base64));
 }
 
 async function refreshAccessToken(): Promise<void> {
@@ -133,10 +146,11 @@ async function refreshAccessToken(): Promise<void> {
 		throw new Error("No access token to extract sessionId");
 	}
 
-	// TODO: figure out how the sessinId is extracted from the payload,
-	// make it cleaner and possiple extract to a util function
-	const payload = JSON.parse(atob(accessToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
-	const sessionId = payload.sessionId;
+	const { sessionId } = decodeJwt(accessToken);
+
+	if (!sessionId) {
+		throw new Error("AccessToken contained no sessionId");
+	}
 
 	const res = await fetch(`${BACKEND}/refresh`, {
 		method: "POST",
@@ -170,9 +184,10 @@ export async function authenticatedFetch(endpoint: string, method: string, body?
 	}
 	try {
 		await refreshAccessToken();
-	} catch {
+	} catch (e) {
+		console.error(e);
 		await logout();
-		throw new Error("Session expired, logged out");
+		throw new Error("Session expired, logged out ");
 	}
 
 	res = await makeRequest(await getAccessToken());

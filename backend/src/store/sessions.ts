@@ -20,6 +20,15 @@ export async function insertSession(userId: number, keyHash: string, expiration:
 	}
 }
 
+export async function deleteSession(sessionId: bigint) {
+	try {
+		await sql`DELETE FROM sessions WHERE id = ${sessionId.toString()}`;
+	} catch (e) {
+		console.error(`Get session request for session with id ${sessionId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
 export async function getSessionById(sessionId: bigint) {
 	try {
 		const rows = await sql<Session[]>`SELECT * FROM sessions WHERE id = ${sessionId.toString()}`;

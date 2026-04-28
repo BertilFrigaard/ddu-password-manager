@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { authenticator } from "@otplib/preset-default";
 import { deleteUserById, getUserByEmail, insertUser, setUserDefaultVault, setUserTwoFactorCode, setUserTwoFactorEnabled } from "../store/users";
 import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET, TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
-import { insertSession, getSessionById } from "../store/sessions";
+import { insertSession, getSessionById, deleteSession } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
 import { getUserVaults, insertVault } from "../store/vaults";
@@ -112,7 +112,7 @@ router.post("/login", async (req, res) => {
 			userId: user.id,
 		},
 		SESSION_JWT_SECRET,
-		{ expiresIn: "15m" },
+		{ expiresIn: "15s" },
 	);
 
 	const vaults = await getUserVaults(user.id);
@@ -165,9 +165,23 @@ router.post("/refresh", async (req, res) => {
 		return;
 	}
 
-	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15m" });
+	const accessToken = jwt.sign({ sessionId: session.id, userId: session.userId }, SESSION_JWT_SECRET, { expiresIn: "15s" });
 
 	res.json({ accessToken });
+});
+
+router.post("/logout", requireAuth({ attachUser: true }), async (req, res) => {
+	if (!res.locals.session) {
+		console.error("No session but passed requireAuth");
+		return res.status(500).json({ error: "Unknown error" });
+	}
+	try {
+		await deleteSession(res.locals.session.sessionId);
+		res.sendStatus(200);
+	} catch (e) {
+		console.error(e);
+		return res.status(500).json({ error: "Could not delete session" });
+	}
 });
 
 router.get("/2fa", requireAuth({ attachUser: true }), async (req, res) => {
