@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { FormInput } from "../userinput/formInput.js";
-import Modal from "./modal.js";
-import { enableTwoFactorAuthentication, getTwoFactorAuthenticationQRCode } from "../../services/authService.js";
-import { useUser } from "../../context/UserContext.js";
+import { FormInput } from "../../userinput/formInput.js";
+import Modal from "../modal.js";
+import { enableTwoFactorAuthentication, getTwoFactorAuthenticationQRCode } from "../../../services/authService.js";
+import { useUser } from "../../../context/UserContext.js";
 
 interface Props {
 	onClose: () => void;

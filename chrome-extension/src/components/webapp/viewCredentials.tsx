@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { FiCopy, FiEdit2 } from "react-icons/fi";
 import { Vault, VaultItem } from "../../common/types.js";
-import { getCredentials } from "../../store/store.js";
 import { decryptData } from "../../services/crypto.js";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
-import Modal from "../modals/modal.js";
 import { CreateNewLogin } from "../modals/createNewLogin.js";
 import { SearchInput } from "../userinput/searchInput.js";
 import { LoginCopyDropdown } from "../dropdowns/loginCopyDropdown.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { selectCredentials } from "../../store/selectors.js";
-import { Fetch2FA } from "../modals/fetch2FA.js";
+import { Fetch2FA } from "../modals/2fa/fetch2FA.js";
 import { EditLogin } from "../modals/editLogin.js";
+import { EditFolder } from "../modals/editFolder.js";
 
 interface Props {
 	selectVault: Vault | null;
@@ -28,6 +27,7 @@ export function ViewCredentials({ selectVault }: Props) {
 	const [selected, setSelected] = useState<null | VaultItem>(null);
 	const [requestWith2FA, setRequestWith2FA] = useState(false);
 	const [editItem, setEditItem] = useState<VaultItem | null>(null);
+	const [whileEditFolder, setWhileEditFolder] = useState(false);
 
 	const credentials = selectCredentials(vaults, selectVault?.id);
 
@@ -78,17 +78,38 @@ export function ViewCredentials({ selectVault }: Props) {
 					itemId={showingPassword}
 				/>
 			)}
+			{whileEditFolder && selectVault && (
+				<EditFolder
+					onClose={() => {
+						setWhileEditFolder(false);
+					}}
+					vault={selectVault}
+				/>
+			)}
 			<div className="justify-between flex">
 				<h2 className="text-3xl font-semibold mb-5">{selectVault ? selectVault.name : "Your Logins"}</h2>
-				<button
-					onClick={() => {
-						setWhileNewLogin(true);
-					}}
-					className="font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
-				>
-					<FaPlus />
-					New Login
-				</button>
+				<div className="flex gap-5">
+					<button
+						onClick={() => {
+							setWhileNewLogin(true);
+						}}
+						className="font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
+					>
+						<FaPlus />
+						New Login
+					</button>
+					{selectVault && (
+						<button
+							onClick={() => {
+								setWhileEditFolder(true);
+							}}
+							className="border border-gray-500 font-semibold flex gap-1 items-center justify-center hover:cursor-pointer h-10 px-3 text-gray-800 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+						>
+							<FiEdit2 />
+							Edit Folder
+						</button>
+					)}
+				</div>
 			</div>
 			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
 			<div className="flex flex-col gap-3 w-full">

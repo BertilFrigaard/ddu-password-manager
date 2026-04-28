@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import Modal from "./modal.js";
 import { FormInput } from "../userinput/formInput.js";
-import { FaRegEye, FaRegEyeSlash, FaChevronDown } from "react-icons/fa";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { PasswordGenerator } from "../userinput/passwordGenerator.js";
-import { createCredential, updateCredential } from "../../services/credentialService.js";
+import { updateCredential } from "../../services/credentialService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { getVaults } from "../../services/vaultService.js";
-import { Setup2FA } from "./setup2FA.js";
+import { Setup2FA } from "./2fa/setup2FA.js";
 import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
-import { Fetch2FA } from "./fetch2FA.js";
-import { CustomRequest2FA } from "./customRequest2FA.js";
+import { Fetch2FA } from "./2fa/fetch2FA.js";
+import { CustomRequest2FA } from "./2fa/customRequest2FA.js";
 
 interface Props {
 	onClose: () => void;

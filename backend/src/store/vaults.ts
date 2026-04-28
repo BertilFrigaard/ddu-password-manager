@@ -20,6 +20,21 @@ export async function insertVault(userId: number, name: string, twoFactorEnabled
 	}
 }
 
+export async function updateVault(vaultId: number, name: string, twoFactorEnabled?: boolean | undefined) {
+	try {
+		await sql`
+			UPDATE vaults
+			SET
+				name = ${name}
+				${twoFactorEnabled !== undefined ? sql`, two_factor_enabled = ${twoFactorEnabled}` : sql``}
+			WHERE id = ${vaultId}
+		`;
+	} catch (e) {
+		console.error(`Update vault request for vault id ${vaultId} threw error: \n ${e}`);
+		throw new Error("Something went wrong");
+	}
+}
+
 export async function getDBVaultById(id: number): Promise<DBVault | null> {
 	try {
 		const rows = await sql<DBVault[]>`SELECT * FROM vaults WHERE id = ${id}`;

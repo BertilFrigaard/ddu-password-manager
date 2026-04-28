@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef, useState } from "react";
 import { VaultItem } from "../../common/types.js";
 import { decryptData } from "../../services/crypto.js";
-import { Fetch2FA } from "../modals/fetch2FA.js";
+import { Fetch2FA } from "../modals/2fa/fetch2FA.js";
 
 interface Props {
 	item: VaultItem;

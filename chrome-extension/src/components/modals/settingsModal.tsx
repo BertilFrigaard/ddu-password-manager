@@ -1,9 +1,8 @@
 import Modal from "./modal.js";
 import { useUser } from "../../context/UserContext.js";
 import { useState } from "react";
-import { Setup2FA } from "./setup2FA.js";
+import { Setup2FA } from "./2fa/setup2FA.js";
 import { FormInput } from "../userinput/formInput.js";
-import { deriveKeys } from "../../services/crypto.js";
 import { deleteAccount } from "../../services/authService.js";
 
 interface Props {

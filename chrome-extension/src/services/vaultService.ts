@@ -13,6 +13,15 @@ export async function createVault(vaultName: string, twoFactorEnabled: boolean) 
 	}
 }
 
+export async function updateVault(vaultId: number, vaultName: string, twoFactorEnabled?: boolean, token?: string) {
+	const res = await authenticatedFetch(`/vaults/${vaultId}`, "POST", { name: vaultName, twoFactorEnabled, token: token });
+
+	if (!res.ok) {
+		logRequestError("updateVault", res);
+		throw Error("Failed to update vault");
+	}
+}
+
 export async function getVaults() {
 	const res = await authenticatedFetch("/vaults", "GET");
 

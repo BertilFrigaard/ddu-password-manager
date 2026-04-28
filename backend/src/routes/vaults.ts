@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVaultItem } from "../store/vaults";
+import { getDBVaultById, getDBVaultItemPasswordByItemId, getUserVaults, insertVault, insertVaultItem, updateVault, updateVaultItem } from "../store/vaults";
 import { ItemPassword } from "../types/index";
 import { requireAuth } from "../middleware/auth";
 import { requireItem, requireVault } from "../middleware/vault";
@@ -44,6 +44,48 @@ router.post("/vaults", requireAuth({ attachUser: true }), async (req, res) => {
 		res.status(201).json({ vaultId: id });
 	} catch (e) {
 		return res.status(500).json({ error: e });
+	}
+});
+
+router.post("/vaults/:vaultId", requireAuth({ attachUser: true }), requireVault({ attachVault: true, checkOwnership: true }), async (req, res) => {
+	if (!res.locals.user || !res.locals.vault) {
+		res.status(500).json({ error: "User or vault not found. Internal server error" });
+		return;
+	}
+
+	const { name, twoFactorEnabled, token } = req.body;
+
+	if (!name || typeof name !== "string") {
+		res.status(400).json({ error: "Invalid vault name" });
+		return;
+	}
+
+	if (twoFactorEnabled !== undefined && typeof twoFactorEnabled !== "boolean") {
+		res.status(400).json({ error: "Invalid value for twoFactorEnabled" });
+		return;
+	}
+
+	if (res.locals.vault.twoFactorEnabled && twoFactorEnabled === false) {
+		if (!token) {
+			res.status(400).json({ error: "Token missing from request. 2FA required to disable two-factor authentication" });
+			return;
+		}
+
+		const secret = decrypt(TWO_FACTOR_AUTH_SYMMETRIC_KEY, res.locals.user.twoFactorSecretCiphertext, res.locals.user.twoFactorSecretIv, res.locals.user.twoFactorSecretTag);
+		const isValid = authenticator.verify({ secret, token });
+
+		if (!isValid) {
+			res.status(403).json({ error: "Invalid token." });
+			return;
+		}
+	}
+
+	try {
+		await updateVault(res.locals.vault.id, name, twoFactorEnabled);
+		res.sendStatus(200);
+	} catch (e) {
+		console.error(e);
+		res.status(500).json({ error: "Failed to update vault" });
 	}
 });
 
