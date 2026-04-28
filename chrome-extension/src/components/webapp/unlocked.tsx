@@ -23,8 +23,11 @@ export function Unlocked() {
 	const [showHelp, setShowHelp] = useState(false);
 
 	useEffect(() => {
-		getVaults();
-		refreshVaults();
+		const pageRefresh = async () => {
+			await getVaults();
+			await refreshVaults();
+		};
+		pageRefresh();
 	}, []);
 
 	useEffect(() => {

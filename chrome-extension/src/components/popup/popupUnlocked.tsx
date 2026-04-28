@@ -12,6 +12,7 @@ import { selectCredentials } from "../../store/selectors.js";
 import { FaFill } from "react-icons/fa";
 import { CustomRequest2FA } from "../modals/2fa/customRequest2FA.js";
 import { Fetch2FA } from "../modals/2fa/fetch2FA.js";
+import { FaPlus } from "react-icons/fa6";
 
 export function PopupUnlocked() {
 	const { refreshUser } = useUser();
@@ -24,13 +25,18 @@ export function PopupUnlocked() {
 
 	const credentials = selectCredentials(vaults);
 
-	const onWebapp = async () => {
+	const onWebapp = () => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html") });
 		window.close();
 	};
 
-	const onEditCredential = async (id: number) => {
+	const onEditCredential = (id: number) => {
 		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=edit&credentialId=" + id) });
+		window.close();
+	};
+
+	const onNewCredential = () => {
+		chrome.tabs.create({ url: chrome.runtime.getURL("public/mainpage.html?openView=new") });
 		window.close();
 	};
 
@@ -184,12 +190,11 @@ export function PopupUnlocked() {
 				<button
 					className="flex items-center gap-1 hover:cursor-pointer"
 					onClick={() => {
-						// TODO: Get updates from server
-						refreshVaults();
+						onNewCredential();
 					}}
 				>
-					<FiRefreshCw size={14} />
-					Refresh
+					<FaPlus size={14} />
+					New Login
 				</button>
 			</div>
 		</div>

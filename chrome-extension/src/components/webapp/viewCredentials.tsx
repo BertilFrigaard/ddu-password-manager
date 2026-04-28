@@ -29,8 +29,25 @@ export function ViewCredentials({ selectVault }: Props) {
 	const [requestWith2FA, setRequestWith2FA] = useState(false);
 	const [editItem, setEditItem] = useState<VaultItem | null>(null);
 	const [whileEditFolder, setWhileEditFolder] = useState(false);
+	const initialLoadDone = useRef(false);
 
 	const credentials = selectCredentials(vaults, selectVault?.id);
+
+	useEffect(() => {
+		if (initialLoadDone.current || credentials.length === 0) return;
+		initialLoadDone.current = true;
+		const params = new URLSearchParams(window.location.search);
+		const popup = params.get("openView");
+		if (popup == "edit") {
+			const credentialId = params.get("credentialId");
+			if (credentialId) {
+				const numId = Number(credentialId);
+				setEditItem(credentials.find((v) => v.id == numId) ?? null);
+			}
+		} else if (popup == "new") {
+			setWhileNewLogin(true);
+		}
+	}, [credentials]);
 
 	useEffect(() => {
 		setDecryptedPassword(null);
