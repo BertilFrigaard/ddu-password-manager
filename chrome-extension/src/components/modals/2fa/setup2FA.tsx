@@ -50,7 +50,7 @@ export function Setup2FA({ onClose }: Props) {
 		</Modal>;
 	} else {
 		return (
-			<Modal title="Setup Two Factor Authentication" onClose={() => {}}>
+			<Modal title="Setup Two Factor Authentication" onClose={onClose} closeOnOutsideClick={false}>
 				<p>A little about 2FA</p>
 				<div className="flex flex-col gap-1">{isLoading ? <p>Loading...</p> : qrCode && <img src={qrCode} />}</div>
 				<div className="flex flex-col gap-1">
