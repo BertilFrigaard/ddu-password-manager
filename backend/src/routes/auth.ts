@@ -68,7 +68,10 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
 	const { authKey, email } = req.body;
 
-	// Missing input validation
+	if (!authKey || !email) {
+		return res.status(400).json({ error: "Login request needs both authKey and email" });
+	}
+
 	let user;
 	try {
 		user = await getUserByEmail(email);
