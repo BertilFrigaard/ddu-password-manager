@@ -9,25 +9,25 @@ const tips = [
 		title: "Use Strong Passwords",
 		color: "bg-blue-50 border-blue-200",
 		titleColor: "text-blue-800",
-		items: ["Use our password generator", "Make passwords at least 14 characters", "Include symbols, letters, and numbers", "Never use personal information"],
+		items: ["Use our password generator", "Make passwords at least 15 characters", "Include symbols, letters, and numbers", "Never use personal information"],
 	},
 	{
-		title: "Enable Two-Factor Auth",
+		title: "Enable Two Factor Authentication",
 		color: "bg-green-50 border-green-200",
 		titleColor: "text-green-800",
-		items: ["Add 2FA to your most sensitive accounts", "Use an authenticator app, not SMS", "Store backup codes securely", "Enable 2FA in the extension settings"],
+		items: ["Enable 2FA in the settings", "Add 2FA to your most sensitive accounts", "Use with folders for organization"],
 	},
 	{
 		title: "Organise with Folders",
 		color: "bg-purple-50 border-purple-200",
 		titleColor: "text-purple-800",
-		items: ["Group logins by category or site", "Use folders for work vs. personal", "Rename folders to stay organised", "Delete unused logins regularly"],
+		items: ["Group related logins in folders", "Use folders for work vs. personal", "Rename folders to stay organised", "Enable 2FA on entire folders"],
 	},
 	{
 		title: "Keep Your Account Safe",
 		color: "bg-amber-50 border-amber-200",
 		titleColor: "text-amber-800",
-		items: ["Use a strong master password", "Don't share your master password", "Lock the extension when not in use", "Log out on shared computers"],
+		items: ["Use a strong master password", "Don't share your master password", "Log out on shared computers"],
 	},
 ];
 
