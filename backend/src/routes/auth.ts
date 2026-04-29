@@ -98,30 +98,32 @@ router.post("/login", async (req, res) => {
 		return;
 	}
 
+	// Generate 32 Byte random refresh key using underlying CSPRING
 	const refreshKey = crypto.randomBytes(32);
+
+	// Usa HMAC hash which is fast to hash the refreshKey with a secret key
 	const hash = crypto.createHmac("sha256", REFRESH_TOKEN_HASH_SECRET).update(refreshKey);
+	// Extract the key hash in hex
 	const sessionKeyHash = hash.digest("hex");
 
+	// Define when session expires.
 	const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 	const sessionExpiration = BigInt(Date.now() + ONE_WEEK_MS);
 
+	// Insert session in database for persistant storage
 	let sessionId;
 	try {
 		sessionId = await insertSession(user.id, sessionKeyHash, sessionExpiration);
 	} catch (e) {
+		// If error occurs return function and send error to client
 		return res.status(500).json({ error: e });
 	}
 
-	const session: Session = {
-		id: sessionId,
-		userId: user.id,
-		keyHash: sessionKeyHash,
-		expiration: sessionExpiration,
-	};
-
+	// Create signed JWT token containing sessionId and userId
+	// Using a server secret and 15 minute expiry
 	const accessToken = jwt.sign(
 		{
-			sessionId: session.id,
+			sessionId: sessionId,
 			userId: user.id,
 		},
 		SESSION_JWT_SECRET,
