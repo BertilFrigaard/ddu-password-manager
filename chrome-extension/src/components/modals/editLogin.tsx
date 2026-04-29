@@ -13,6 +13,7 @@ import { decryptData } from "../../services/crypto.js";
 import { Fetch2FA } from "./2fa/fetch2FA.js";
 import { CustomRequest2FA } from "./2fa/customRequest2FA.js";
 import { ConfirmationModal } from "./confirmationModal.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 interface Props {
 	onClose: () => void;
@@ -37,6 +38,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	const [setup2FA, setSetup2FA] = useState(false);
 	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "password" | "update" | "delete">("none");
 	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const loadPassword = async (encryptedPassword: string, iv: string, authTag: string) => {
@@ -57,6 +59,9 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 	}, [vaultItem]);
 
 	const onUpdate = async (token?: string | undefined) => {
+		setLoading(true);
+		setRequestWith2FA("none");
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		try {
 			await updateCredential(vaultItem.id, website, username, twoFactorEnabled, vaultId === sourceVault?.id ? undefined : vaultId, originalPassword === password ? undefined : password, token);
 			await getVaults();
@@ -64,13 +69,19 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 		} catch (e) {
 			console.error(e);
 		}
+		setLoading(false);
 		onClose();
 	};
 
 	const onDelete = async (token?: string) => {
+		setLoading(true);
+		setConfirmDelete(false);
+		setRequestWith2FA("none");
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		await deleteCredential(vaultItem.id, token);
 		await getVaults();
 		await refreshVaults();
+		setLoading(false);
 		onClose();
 	};
 
@@ -228,6 +239,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 						</div>
 					)}
 				</div>
+				<div>{loading && <LoadingSpinner />}</div>
 				<button
 					onClick={() => {
 						if ((vaultItem.twoFactorEnabled && !twoFactorEnabled) || (sourceVault?.twoFactorEnabled && !vault?.twoFactorEnabled)) {

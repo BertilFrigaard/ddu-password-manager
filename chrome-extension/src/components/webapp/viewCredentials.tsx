@@ -47,6 +47,9 @@ export function ViewCredentials({ selectVault }: Props) {
 		} else if (popup == "new") {
 			setWhileNewLogin(true);
 		}
+		params.delete("openView");
+		params.delete("credentialId");
+		window.history.replaceState({}, "", params.toString() ? `?${params}` : window.location.pathname);
 	}, [credentials]);
 
 	useEffect(() => {

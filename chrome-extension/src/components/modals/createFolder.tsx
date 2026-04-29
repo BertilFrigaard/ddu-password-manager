@@ -5,6 +5,7 @@ import { createVault, getVaults } from "../../services/vaultService.js";
 import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { Setup2FA } from "./2fa/setup2FA.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 interface Props {
 	onClose: () => void;
@@ -16,6 +17,7 @@ export function CreateFolder({ onClose }: Props) {
 	const [newFolderName, setNewFolderName] = useState<string>("");
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	if (setup2FA) {
 		return (
@@ -60,13 +62,17 @@ export function CreateFolder({ onClose }: Props) {
 					</div>
 				)}
 			</div>
+			<div>{loading && <LoadingSpinner />}</div>
 			<button
 				onClick={async () => {
 					if (newFolderName) {
+						setLoading(true);
+						await new Promise((resolve) => setTimeout(resolve, 0));
 						await createVault(newFolderName, twoFactorEnabled);
 						await getVaults();
 						await refreshVaults();
 						onClose();
+						setLoading(false);
 					}
 				}}
 				className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"

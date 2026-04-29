@@ -8,6 +8,7 @@ import { useVaults } from "../../context/VaultContext.js";
 import { useUser } from "../../context/UserContext.js";
 import { getVaults } from "../../services/vaultService.js";
 import { Setup2FA } from "./2fa/setup2FA.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 interface Props {
 	onClose: () => void;
@@ -24,10 +25,13 @@ export function CreateNewLogin({ onClose }: Props) {
 	const [showGenerator, setShowGenerator] = useState(false);
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 	const [setup2FA, setSetup2FA] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const vault = vaults?.find((v) => v.id == vaultId);
 
 	const onCreate = async () => {
+		setIsLoading(true);
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		if (vault?.twoFactorEnabled) {
 			await createCredential(website, username, password, vaultId, false);
 		} else {
@@ -35,6 +39,7 @@ export function CreateNewLogin({ onClose }: Props) {
 		}
 		await getVaults();
 		await refreshVaults();
+		setIsLoading(false);
 		onClose();
 	};
 
@@ -123,6 +128,7 @@ export function CreateNewLogin({ onClose }: Props) {
 						</div>
 					)}
 				</div>
+				<div>{isLoading && <LoadingSpinner />}</div>
 				<button onClick={onCreate} className="btn-primary">
 					Create
 				</button>

@@ -9,6 +9,7 @@ import { Vault } from "../../common/types.js";
 import { CustomRequest2FA } from "./2fa/customRequest2FA.js";
 import { deleteCredential } from "../../services/credentialService.js";
 import { ConfirmationModal } from "./confirmationModal.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 interface Props {
 	onClose: () => void;
@@ -22,19 +23,29 @@ export function EditFolder({ onClose, vault }: Props) {
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(vault.twoFactorEnabled);
 	const [requestWith2FA, setRequestWith2FA] = useState<"none" | "setup" | "edit" | "delete">("none");
 	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const onEdit = async (token?: string) => {
+		setLoading(true);
+		setRequestWith2FA("none");
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		await updateVault(vault.id, newFolderName, twoFactorEnabled, token);
 		await getVaults();
 		await refreshVaults();
 		onClose();
+		setLoading(false);
 	};
 
 	const onDelete = async (token?: string) => {
+		setLoading(true);
+		setConfirmDelete(false);
+		setRequestWith2FA("none");
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		await deleteVault(vault.id, token);
 		await getVaults();
 		await refreshVaults();
 		onClose();
+		setLoading(false);
 	};
 
 	if (requestWith2FA == "setup") {
@@ -128,6 +139,7 @@ export function EditFolder({ onClose, vault }: Props) {
 					</div>
 				)}
 			</div>
+			<div>{loading && <LoadingSpinner />}</div>
 			<button
 				onClick={async () => {
 					if (newFolderName !== vault.name || twoFactorEnabled !== vault.twoFactorEnabled) {
