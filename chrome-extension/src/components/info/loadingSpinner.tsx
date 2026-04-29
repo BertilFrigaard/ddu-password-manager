@@ -1,0 +1,11 @@
+type LoadingSpinnerProps = { size?: "sm" | "md" | "lg"; label?: string };
+
+export default function LoadingSpinner({ size = "md", label }: LoadingSpinnerProps) {
+	const sizes = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-10 w-10" };
+	return (
+		<div className="flex items-center justify-center gap-2 text-gray-500">
+			<div className={`${sizes[size]} animate-spin rounded-full border-2 border-gray-300 border-t-gray-700`} />
+			{label && <span className="text-sm">{label}</span>}
+		</div>
+	);
+}

@@ -25,6 +25,7 @@ export async function logRequestError(method: string, res: Response) {
 	}
 
 	console.error(errorString);
+	return resJson.error ?? "Unknown Error";
 }
 
 export function setTextElement(element: HTMLElement | null, str: string) {

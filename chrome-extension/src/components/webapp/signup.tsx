@@ -2,9 +2,9 @@ import { useState } from "react";
 import { login, signup } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { CiWarning } from "react-icons/ci";
-import { ErrorBox } from "../info/errorBox.js";
 import { FormInput } from "../userinput/formInput.js";
 import { useUser } from "../../context/UserContext.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 export function Signup() {
 	const { refreshUser } = useUser();
@@ -13,12 +13,20 @@ export function Signup() {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const onSignup = async () => {
 		if (evalInputs()) {
-			await signup(username, password);
-			await login(username, password);
-			refreshUser();
+			setLoading(true);
+			await new Promise((resolve) => setTimeout(resolve, 0));
+			try {
+				await signup(username, password);
+				await login(username, password);
+				refreshUser();
+			} catch (e) {
+				setErrorMessage(e instanceof Error ? e.message : String(e));
+			}
+			setLoading(false);
 		}
 	};
 
@@ -70,11 +78,12 @@ export function Signup() {
 				</div>
 				<FormInput placeholder="Password" type="password" value={password} onChange={setPassword} />
 				<FormInput placeholder="Confirm Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
-				{errorMessage && <ErrorBox msg={errorMessage} />}
-				<button onClick={onSignup} className="btn-primary">
+				{errorMessage && !loading && <p className="text-danger">{errorMessage}</p>}
+				{loading && <LoadingSpinner />}
+				<button onClick={onSignup} disabled={loading} className="btn-primary">
 					Signup
 				</button>
-				<button onClick={onLogin} className="relative btn-secondary flex justify-center">
+				<button onClick={onLogin} disabled={loading} className="relative btn-secondary flex justify-center">
 					Login
 					<BsBoxArrowUpRight size={14} className="absolute right-3" />
 				</button>

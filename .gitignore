@@ -4,3 +4,4 @@ build/
 .env
 old/
 .vscode
+usecase-diagram.puml

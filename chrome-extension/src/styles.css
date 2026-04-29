@@ -47,3 +47,7 @@
 @utility box-success {
 	@apply box text-green-800 border border-green-200 bg-green-50;
 }
+
+@utility text-danger {
+	@apply text-red-600 text-center;
+}

@@ -3,15 +3,25 @@ import { login } from "../../services/authService.js";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { FormInput } from "../userinput/formInput.js";
 import { useUser } from "../../context/UserContext.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 export function PopupLocked() {
 	const { refreshUser } = useUser();
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
 
 	const onLogin = async () => {
-		await login(username, password);
-		refreshUser();
+		setLoading(true);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		try {
+			await login(username, password);
+			await refreshUser();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : String(e));
+		}
+		setLoading(false);
 	};
 
 	const onSignup = async () => {
@@ -30,16 +40,18 @@ export function PopupLocked() {
 			<div className="flex flex-col gap-3 w-full">
 				<FormInput placeholder="Email" value={username} onChange={setUsername} />
 				<FormInput placeholder="Password" type="password" value={password} onChange={setPassword} />
-				<button onClick={onLogin} className="btn-primary">
+				<div>{loading && <LoadingSpinner />}</div>
+				{error && !loading && <p className="text-danger">{error}</p>}
+				<button onClick={onLogin} disabled={loading} className="btn-primary">
 					Login
 				</button>
-				<button onClick={onSignup} className="btn-secondary relative flex justify-center">
+				<button onClick={onSignup} disabled={loading} className="btn-secondary relative flex justify-center">
 					Signup
 					<BsBoxArrowUpRight size={14} className="absolute right-3" />
 				</button>
 			</div>
 			<button onClick={onWebapp} className="btn-sm-ghost mt-4">
-				Open web app
+				Open App
 			</button>
 		</div>
 	);

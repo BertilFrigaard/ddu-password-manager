@@ -79,7 +79,7 @@ export function PopupUnlocked() {
 	}, [credentials]);
 
 	return (
-		<div className="flex flex-col items-center justify-center w-80 min-h-90 max-h-110 px-6 py-3 bg-white">
+		<div className="flex flex-col w-80 min-h-auto max-h-135 px-6 py-3 bg-white">
 			{autofill2FA && (
 				<Fetch2FA
 					itemId={autofill2FA.id}
@@ -103,39 +103,42 @@ export function PopupUnlocked() {
 				/>
 			</div>
 			<SearchInput value={searchText} onChange={setSearchText} className="mb-4" />
-			{suggestions &&
-				!searchText &&
-				suggestions.length > 0 &&
-				suggestions.map((item) => (
-					<div className="flex flex-1 flex-col gap-3 w-full overflow-y-scroll mb-4">
-						<div key={item.id} className="flex gap-3 w-full justify-between border border-gray-300 rounded-md px-3 py-1">
-							<div className="min-w-0 overflow-hidden">
-								<p className="text-sm text-gray-800 font-semibold truncate">{item.website}</p>
-								<p className="text-sm text-gray-600 truncate">{item.username}</p>
-							</div>
-							<div className="relative items-center my-auto" ref={selected?.id === item.id ? dropdownRef : null}>
-								<button
-									onClick={async () => {
-										if (item.twoFactorEnabled) {
-											setAutofill2FA(item);
-										} else {
-											if (!item.password) {
-												console.error("item password not set for non 2FA item, should not happen");
-												return;
+			{suggestions && !searchText && suggestions.length > 0 && (
+				<>
+					<label className="text-xs font-medium text-gray-600 mb-1">Suggested Logins</label>
+					<div className="flex flex-col gap-3 w-full max-h-32 overflow-y-auto mb-4 shrink-0">
+						{suggestions.map((item) => (
+							<div key={item.id} className="flex gap-3 w-full justify-between border border-gray-300 rounded-md px-3 py-1">
+								<div className="min-w-0 overflow-hidden">
+									<p className="text-sm text-gray-800 font-semibold truncate">{item.website}</p>
+									<p className="text-sm text-gray-600 truncate">{item.username}</p>
+								</div>
+								<div className="relative items-center my-auto" ref={selected?.id === item.id ? dropdownRef : null}>
+									<button
+										onClick={async () => {
+											if (item.twoFactorEnabled) {
+												setAutofill2FA(item);
+											} else {
+												if (!item.password) {
+													console.error("item password not set for non 2FA item, should not happen");
+													return;
+												}
+												await autofill(item.username, item.password);
 											}
-											await autofill(item.username, item.password);
-										}
-									}}
-									className="flex gap-1 hover:cursor-pointer"
-								>
-									<FaFill size={14} />
-									Autofill
-								</button>
+										}}
+										className="flex gap-1 hover:cursor-pointer"
+									>
+										<FaFill size={14} />
+										Autofill
+									</button>
+								</div>
 							</div>
-						</div>
+						))}
 					</div>
-				))}
-			<div className="flex flex-1 flex-col gap-3 w-full overflow-y-auto">
+				</>
+			)}
+			<label className="text-xs font-medium text-gray-600 mb-1">Your Logins</label>
+			<div className="flex flex-2 flex-col gap-3 w-full overflow-y-auto">
 				{!credentials && <p className="m-auto text-sm text-gray-400 italic text-center py-4">Loading...</p>}
 				{credentials && credentials.length <= 0 && <p className="m-auto text-sm text-gray-400 italic text-center py-4">No logins yet</p>}
 				{credentials &&

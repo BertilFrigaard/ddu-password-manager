@@ -37,8 +37,8 @@ export async function signup(email: string, password: string) {
 	});
 
 	if (!res.ok) {
-		logRequestError("signup", res);
-		throw Error("Failed to signup");
+		const err = await logRequestError("signup", res);
+		throw Error(err);
 	}
 }
 
@@ -87,11 +87,12 @@ export async function login(email: string, password: string) {
 
 			setVaults(decryptedVaults);
 		} catch (err) {
-			throw err;
+			console.error(err);
+			throw Error("Unknown Error");
 		}
 	} else {
-		logRequestError("login", res);
-		throw Error("Failed to login");
+		const err = await logRequestError("login", res);
+		throw Error(err);
 	}
 }
 
