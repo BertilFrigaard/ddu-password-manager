@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Setup2FA } from "./2fa/setup2FA.js";
 import { FormInput } from "../userinput/formInput.js";
 import { deleteAccount } from "../../services/authService.js";
+import LoadingSpinner from "../info/loadingSpinner.js";
 
 interface Props {
 	onClose: () => void;
@@ -15,23 +16,30 @@ export function SettingsModal({ onClose }: Props) {
 	const [deleteAccountModal, setDeleteAccountModal] = useState(false);
 	const [deleteMasterPassword, setDeleteMasterPassword] = useState("");
 	const [deleteToken, setDeleteToken] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState("");
 
 	const confirmDelete = async () => {
 		if (!deleteMasterPassword || (!deleteToken && user?.twoFactorEnabled)) {
-			console.error("You must enter both 2FA token and master password");
+			setError("You must enter both master password and 2FA token.");
 			return;
 		}
 
 		if (!user) {
-			console.error("Something went wrong. User is not in session. Try relogging.");
+			setError("Something went wrong. User is not in session. Try relogging.");
 			return;
 		}
+
+		setError("");
+		setIsLoading(true);
+		await new Promise((resolve) => setTimeout(resolve, 0));
 		try {
 			await deleteAccount(user.email, deleteMasterPassword, user.twoFactorEnabled ? deleteToken : null);
 			await refreshUser();
 		} catch (e) {
-			console.error(e);
+			setError(e instanceof Error ? e.message : String(e));
 		}
+		setIsLoading(false);
 	};
 
 	if (deleteAccountModal) {
@@ -58,7 +66,9 @@ export function SettingsModal({ onClose }: Props) {
 						<FormInput placeholder="2FA Token" value={deleteToken} type="password" onChange={setDeleteToken} />
 					</div>
 				)}
-				<button onClick={confirmDelete} className="btn-danger w-full">
+				{isLoading && <LoadingSpinner />}
+				{error && !isLoading && <p className="text-danger">{error}</p>}
+				<button onClick={confirmDelete} disabled={isLoading} className="btn-danger w-full">
 					Delete
 				</button>
 			</Modal>

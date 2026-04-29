@@ -221,8 +221,8 @@ export async function deleteAccount(email: string, password: string, token: null
 	const res = await authenticatedFetch("/user", "DELETE", body);
 
 	if (!res.ok) {
-		logRequestError("deleteAccount", res);
-		throw Error("Failed to delete account");
+		const err = await logRequestError("deleteAccount", res);
+		throw Error(err);
 	}
 
 	await logout();
