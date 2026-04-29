@@ -11,9 +11,8 @@ export interface ItemPassword {
 	authTag: string;
 }
 
-// Decrypted VaultItem — encryptedInfo/iv/authTag have been decrypted into website+username
 export interface VaultItem {
-	// TODO: id is bigint on the backend; switch to bigint + string-on-wire when needed
+	// id is bigint on the backend. For simplicity number is used here which should be plenty
 	id: number;
 	website: string;
 	username: string;

@@ -8,7 +8,6 @@ export async function createCredential(website: string, username: string, passsw
 
 	const encryptedInfo = await encryptData(enc.encode(JSON.stringify({ website, username })));
 	let body;
-	// TODO: Twofactor should not always be false i am thinking
 	if (passsword) {
 		const encryptedPassword = await encryptData(enc.encode(passsword));
 		body = {

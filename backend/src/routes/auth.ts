@@ -16,7 +16,9 @@ const router = Router();
 router.post("/signup", async (req, res) => {
 	const { authKey, encryptedKey, iv, authTag, email } = req.body;
 
-	// TODO: Missing input validation
+	if (!authKey || !encryptedKey || !iv || !authTag || !email) {
+		return res.status(400).json({ error: "You must submit all the required fields" });
+	}
 
 	let user;
 	try {
@@ -26,7 +28,6 @@ router.post("/signup", async (req, res) => {
 	}
 
 	if (user) {
-		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
 		console.error(`User with email '${email}' already exists`);
 		res.status(400).json({ error: "User already exists" });
 		return;
@@ -76,7 +77,6 @@ router.post("/login", async (req, res) => {
 	}
 
 	if (!user) {
-		// TODO: Overvej om en generisk fejlbesked er bedre så vi ikke leaker emails
 		console.error(`User with email '${email}' dosen't exist`);
 		res.status(403).json({ error: "Unknown email" });
 		return;
@@ -127,7 +127,6 @@ router.post("/login", async (req, res) => {
 
 	const vaults = await getUserVaults(user.id);
 
-	// TODO: Maybe the email should also be filtered away as it might be seen as sensitive
 	const { authKeyHash: _, serverSalt: __, twoFactorSecretCiphertext: ___, twoFactorSecretIv: ____, twoFactorSecretTag: _____, ...userWithoutSensitiveData } = user;
 	res.json({ user: userWithoutSensitiveData, accessToken, refreshKey: refreshKey.toString("hex"), vaults });
 });
@@ -161,8 +160,8 @@ router.post("/refresh", async (req, res) => {
 		return;
 	}
 
-	// TODO: Maybe delete the session if it is expired
 	if (session.expiration <= BigInt(Date.now())) {
+		deleteSession(sessionId);
 		res.status(401).json({ error: "Session expired" });
 		return;
 	}
