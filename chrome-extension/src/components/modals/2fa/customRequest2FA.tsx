@@ -41,6 +41,7 @@ export function CustomRequest2FA({ onClose, onSubmit, description }: Props) {
 						onClick={() => {
 							submitToken();
 						}}
+						disabled={isLoading}
 						className="btn-primary"
 					>
 						Confirm

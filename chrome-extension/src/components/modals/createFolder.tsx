@@ -75,6 +75,7 @@ export function CreateFolder({ onClose }: Props) {
 						setLoading(false);
 					}
 				}}
+				disabled={loading}
 				className="py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition-colors cursor-pointer"
 			>
 				Create

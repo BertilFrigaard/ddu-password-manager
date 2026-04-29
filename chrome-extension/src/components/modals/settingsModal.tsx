@@ -115,6 +115,7 @@ export function SettingsModal({ onClose }: Props) {
 						onClick={() => {
 							setDeleteAccountModal(true);
 						}}
+						disabled={isLoading}
 						className="btn-danger w-full"
 					>
 						Delete Account

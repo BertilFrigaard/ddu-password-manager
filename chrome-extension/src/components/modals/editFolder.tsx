@@ -152,6 +152,7 @@ export function EditFolder({ onClose, vault }: Props) {
 						onClose();
 					}
 				}}
+				disabled={loading}
 				className="btn-primary"
 			>
 				Update
@@ -160,6 +161,7 @@ export function EditFolder({ onClose, vault }: Props) {
 				onClick={async () => {
 					setConfirmDelete(true);
 				}}
+				disabled={loading}
 				className="btn-danger"
 			>
 				Delete

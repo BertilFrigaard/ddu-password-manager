@@ -248,6 +248,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 							onUpdate();
 						}
 					}}
+					disabled={loading}
 					className="btn-primary"
 				>
 					Update
@@ -256,6 +257,7 @@ export function EditLogin({ onClose, vaultItem }: Props) {
 					onClick={() => {
 						setConfirmDelete(true);
 					}}
+					disabled={loading}
 					className="btn-danger"
 				>
 					Delete

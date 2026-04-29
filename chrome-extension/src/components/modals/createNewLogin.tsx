@@ -129,7 +129,7 @@ export function CreateNewLogin({ onClose }: Props) {
 					)}
 				</div>
 				<div>{isLoading && <LoadingSpinner />}</div>
-				<button onClick={onCreate} className="btn-primary">
+				<button onClick={onCreate} disabled={isLoading} className="btn-primary">
 					Create
 				</button>
 			</Modal>

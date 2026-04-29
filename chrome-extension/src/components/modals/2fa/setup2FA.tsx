@@ -94,6 +94,7 @@ export function Setup2FA({ onClose }: Props) {
 						onClick={() => {
 							submitToken();
 						}}
+						disabled={isLoading}
 						className="btn-primary"
 					>
 						Enable Two Factor Authentication
