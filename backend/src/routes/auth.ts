@@ -3,7 +3,7 @@ import qrcode from "qrcode";
 import crypto from "node:crypto";
 import { authenticator } from "@otplib/preset-default";
 import { deleteUserById, getUserByEmail, insertUser, setUserDefaultVault, setUserTwoFactorCode, setUserTwoFactorEnabled } from "../store/users";
-import { REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET, TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
+import { AUTHKEY_HASH_OPTIONS, REFRESH_TOKEN_HASH_SECRET, SESSION_JWT_SECRET, TWO_FACTOR_AUTH_SYMMETRIC_KEY } from "../config";
 import { insertSession, getSessionById, deleteSession } from "../store/sessions";
 import jwt from "jsonwebtoken";
 import { Session } from "../types";
@@ -36,7 +36,12 @@ router.post("/signup", async (req, res) => {
 	// Since the authKey is made during an expensive hashing on the client,
 	// the server hashing can be cheaper, which is good if the server handles multiple users
 	const serverSalt = crypto.randomBytes(16);
-	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: serverSalt, parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
+	const authKeyHash = await new Promise<Buffer>((resolve, reject) => {
+		crypto.argon2("argon2id", { message: Buffer.from(authKey, "hex"), nonce: serverSalt, ...AUTHKEY_HASH_OPTIONS }, (err, key) => {
+			if (err) reject(err);
+			else resolve(key);
+		});
+	});
 
 	try {
 		// Create the user
@@ -77,7 +82,12 @@ router.post("/login", async (req, res) => {
 		return;
 	}
 
-	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
+	const authKeyHash = await new Promise<Buffer>((resolve, reject) => {
+		crypto.argon2("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(user.serverSalt, "hex"), ...AUTHKEY_HASH_OPTIONS }, (err, key) => {
+			if (err) reject(err);
+			else resolve(key);
+		});
+	});
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(user.authKeyHash, "hex"))) {
 		console.error(`Wrong masterPassword trying to log into user with email ${email}`);
@@ -271,7 +281,13 @@ router.delete("/user", requireAuth({ attachUser: true }), async (req, res) => {
 		}
 	}
 
-	const authKeyHash = crypto.argon2Sync("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(res.locals.user.serverSalt, "hex"), parallelism: 4, tagLength: 32, memory: 8192, passes: 3 });
+	const user = res.locals.user;
+	const authKeyHash = await new Promise<Buffer>((resolve, reject) => {
+		crypto.argon2("argon2id", { message: Buffer.from(authKey, "hex"), nonce: Buffer.from(user.serverSalt, "hex"), ...AUTHKEY_HASH_OPTIONS }, (err, key) => {
+			if (err) reject(err);
+			else resolve(key);
+		});
+	});
 
 	if (!crypto.timingSafeEqual(authKeyHash, Buffer.from(res.locals.user.authKeyHash, "hex"))) {
 		console.error(`Wrong masterPassword trying to log into user with email ${res.locals.user.email}`);

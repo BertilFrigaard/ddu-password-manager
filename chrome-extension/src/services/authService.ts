@@ -4,7 +4,7 @@ import { sha512 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, logRequestError, padEmail } from "../common/util.js";
 import { decryptData, decryptVaults, deriveKeys } from "./crypto.js";
 import { VaultItem } from "../common/types.js";
-import { BACKEND } from "../common/config.js";
+import { BACKEND, MASTERKEY_HASH_OPTIONS } from "../common/config.js";
 import { clearAccessToken, clearRefreshKey, clearSymmetricKey, clearUser, clearVaults, getAccessToken, getRefreshKey, setAccessToken, setRefreshKey, setSymmetricKey, setUser, setUser2FA, setVaults } from "../store/store.js";
 
 export async function signup(email: string, password: string) {
@@ -43,21 +43,7 @@ export async function signup(email: string, password: string) {
 }
 
 export async function login(email: string, password: string) {
-	const enc = new TextEncoder();
-
-	// 1. Argon2id via @noble/hashes (not in Web Crypto API)
-	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), {
-		p: 4, // parallelism
-		t: 3, // passes
-		m: 65536, // memory
-		dkLen: 32, // tagLength
-	});
-
-	// 2. HKDF stretch to 64 bytes
-	const stretchedMasterKey = hkdf(sha512, masterKey, new Uint8Array(0), new TextEncoder().encode("DDU"), 64);
-
-	const encKey = stretchedMasterKey.slice(0, 32);
-	const authKey = stretchedMasterKey.slice(32, 64);
+	const { encKey, authKey } = await deriveKeys(email, password);
 
 	// 3. Send authKey to server
 	const res = await fetch(`${BACKEND}/login`, {

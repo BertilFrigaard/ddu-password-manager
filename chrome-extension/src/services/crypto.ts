@@ -4,6 +4,7 @@ import { sha512 } from "@noble/hashes/sha2.js";
 import { getSymmetricKey } from "../store/store.js";
 import { bytesToHex, hexToBytes, padEmail } from "../common/util.js";
 import { Vault, VaultItem } from "../common/types.js";
+import { MASTERKEY_HASH_OPTIONS } from "../common/config.js";
 
 export async function decryptData(encryptedData: string, iv: string, authTag: string): Promise<Uint8Array> {
 	const symmetricKeyHex = await getSymmetricKey();
@@ -65,12 +66,7 @@ export async function deriveKeys(email: string, password: string) {
 	const enc = new TextEncoder();
 
 	// 1. Argon2id via @noble/hashes (not in Web Crypto API)
-	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), {
-		p: 4, // parallelism
-		t: 3, // passes
-		m: 65536, // memory
-		dkLen: 32, // tagLength
-	});
+	const masterKey = argon2id(enc.encode(password), enc.encode(padEmail(email)), MASTERKEY_HASH_OPTIONS);
 
 	// 2. HKDF stretch to 64 bytes
 	const stretchedMasterKey = hkdf(sha512, masterKey, new Uint8Array(0), new TextEncoder().encode("DDU"), 64);
